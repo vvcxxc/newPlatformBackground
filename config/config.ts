@@ -93,169 +93,18 @@ export default {
       routes: [
         {
           path: '/',
+          redirect: '/welcome',
+        },
+        {
+          path: '/',
           component: '../layouts/BasicLayout',
           authority: ['admin', 'user'],
           routes: [
-            {
-              path: '/',
-              redirect: '/marketingActivity/activityinfo/cardlist',
-            },
             {
               path: '/welcome',
               name: 'welcome',
               icon: 'smile',
               component: './Welcome',
-            },
-            {
-              path: '/marketingActivity',
-              name: 'marketingActivity',
-              routes: [
-                {
-                  path: '/marketingActivity/activityInfo/cardlist',
-                  name: 'cardList',
-                  component: './marketingActivity/activityInfo/cardList',
-                },
-                {
-                  path: '/marketingActivity/activityInfo/addActivity',
-                  name: 'addActivity',
-                  component: './marketingActivity/activityInfo/addActivity',
-                },
-                {
-                  path: '/marketingActivity/activityInfo/viewActivity',
-                  name: 'viewActivity',
-                  component: './marketingActivity/activityInfo/viewActivity',
-                },
-                {
-                  path: '/marketingActivity/merchantcard/cardList',
-                  name: 'cardList',
-                  component: './marketingActivity/merchantcard/cardList',
-                },
-                {
-                  path: '/marketingActivity/merchantcard/cardManage',
-                  name: 'cardManage',
-                  component: './marketingActivity/merchantcard/cardManage',
-                },
-                {
-                  path: '/marketingActivity/merchantcard/detail',
-                  name: 'detail',
-                  component: './marketingActivity/merchantcard/detail',
-                },
-              ],
-            },
-            {
-              path: '/lotteryDrawActivity',
-              name: 'lotteryDrawActivity',
-              routes: [
-                {
-                  path: '/lotteryDrawActivity/containerTruck/containerTruckList',
-                  name: 'containerTruckList',
-                  component: './lotteryDrawActivity/containerTruck/containerTruckList',
-                },
-                {
-                  path: '/lotteryDrawActivity/containerTruck/addActivity',
-                  name: 'addActivity',
-                  component: './lotteryDrawActivity/containerTruck/addActivity',
-                },
-                {
-                  path: '/lotteryDrawActivity/containerTruck/editActivity',
-                  name: 'editActivity',
-                  component: './lotteryDrawActivity/containerTruck/editActivity',
-                },
-                {
-                  path: '/lotteryDrawActivity/containerTruck/viewActivity',
-                  name: 'viewActivity',
-                  component: './lotteryDrawActivity/containerTruck/viewActivity',
-                },
-                {
-                  path: '/lotteryDrawActivity/containerTruck/card',
-                  name: 'containerTruckList',
-                  routes: [
-                    {
-                      path: '/lotteryDrawActivity/containerTruck/card/cardList',
-                      name: 'cardList',
-                      component: './lotteryDrawActivity/containerTruck/card/cardList',
-                    },
-                  ],
-                },
-                {
-                  path: '/lotteryDrawActivity/jackPot/jackPotList',
-                  name: 'jackPotList',
-                  component: './lotteryDrawActivity/jackPot/jackPotList',
-                },
-                {
-                  path: '/lotteryDrawActivity/jackPot/addJackPot',
-                  name: 'addJackPot',
-                  component: './lotteryDrawActivity/jackPot/addJackPot',
-                },
-                {
-                  path: '/lotteryDrawActivity/jackPot/editJackPot',
-                  name: 'editJackPot',
-                  component: './lotteryDrawActivity/jackPot/editJackPot',
-                },
-                {
-                  path: '/lotteryDrawActivity/jackPot/viewJackpot',
-                  name: 'viewJackpot',
-                  component: './lotteryDrawActivity/jackPot/viewJackpot',
-                },
-                {
-                  path: '/lotteryDrawActivity/prizes/prizesList',
-                  name: 'prizesList',
-                  component: './lotteryDrawActivity/prizes/prizesList',
-                },
-              ],
-            },
-            {
-              path: '/merchantManagement',
-              name: 'merchantManagement',
-              routes: [
-                {
-                  path: '/merchantManagement/merchantList',
-                  name: 'merchantList',
-                  component: './merchantManagement/merchantList',
-                },
-                {
-                  path: '/merchantManagement/storeAudit',
-                  name: 'storeAudit',
-                  component: './merchantManagement/storeAudit'
-                },
-                {
-                  path: '/merchantManagement/payAudit',
-                  name: 'payAudit',
-                  component: './merchantManagement/payAudit'
-                },
-                {
-                  path: '/merchantManagement/merchantList/setNumber',
-                  name: 'setNumber',
-                  component: './merchantManagement/merchantList/setNumber',
-                }
-              ]
-            },
-            {
-              path: '/personalManagement',
-              name: 'personalManagement',
-              routes: [
-                {
-                  path: '/personalManagement/personalList',
-                  name: 'personalList',
-                  component: './personalManagement/personalList'
-                }
-              ]
-            },
-            {
-              path: '/communityManagement',
-              name: 'communityManagement',
-              routes: [
-                {
-                  path: '/communityManagement/audit-details',
-                  name: 'audit-details',
-                  component: './communityManagement/audit-details',
-                },
-                {
-                  path: '/communityManagement/community-list',
-                  name: 'community-list',
-                  component: './communityManagement/community-list',
-                }
-              ]
             },
             {
               path: '/couponManagement',
@@ -342,6 +191,32 @@ export default {
                   path: '/shopManagement/store-auditfail-detail',
                   name: 'store-auditfail-detail',
                   component: './shopManagement/store-auditfail-detail'
+                },
+              ]
+            },
+            {
+              path: '/giftManagement',
+              name: 'giftManagement',
+              routes: [
+                {
+                  path: '/giftManagement/add-gift',
+                  name: 'add-gift',
+                  component: './giftManagement/add-gift',
+                },
+                {
+                  path: '/giftManagement/gift-details',
+                  name: 'gift-details',
+                  component: './giftManagement/gift-details',
+                },
+                {
+                  path: '/giftManagement/gift-list',
+                  name: 'gift-list',
+                  component: './giftManagement/gift-list',
+                },
+                {
+                  path: '/giftManagement/gift-post',
+                  name: 'gift-post',
+                  component: './giftManagement/gift-post',
                 },
               ]
             },

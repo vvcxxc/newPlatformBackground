@@ -1,0 +1,102 @@
+.details_page {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px 55px;
+  font-size: 16px;
+
+  .layout_box,
+  .layout_box_column {
+    display: flex;
+
+    // justify-content: space-around;
+    .block {
+      margin-right: 50px;
+
+      .block_item {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 10px 0;
+
+        .item_label {
+          // width: 120px;
+          // text-align: right;
+          width: 95px;
+          text-align: left;
+        }
+
+        .item_main {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: flex-start;
+          width: auto;
+          max-width: 400px;
+          // height: auto;
+          .item_main_img {
+            width: 100px;
+          }
+
+          .item_main_phone {
+            width: 375px;
+            height: 667px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            overflow-x: hidden;
+          }
+        }
+      }
+
+      .block_item_column {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+
+        .item_label_row {
+          width: 100%;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: flex-start;
+
+          .remaining_num {
+            color: #D9001B;
+          }
+
+          .remaining_btn {
+            width: 70px;
+            height: 25px;
+            background-color: rgba(22, 155, 213, 1);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 13px;
+            line-height: 1;
+            margin-left: 20px;
+            cursor: pointer;
+          }
+        }
+        .item_labe_table{
+          margin-top: 20px;
+          border: solid 1px #ccc;
+          width: 100%;
+          height: auto;
+        }
+      }
+    }
+  }
+
+  .layout_box {
+    flex-direction: row;
+  }
+
+  .layout_box_column {
+    flex-direction: column;
+  }
+}

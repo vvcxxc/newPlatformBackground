@@ -11,7 +11,7 @@ interface LoginProps {
 class Login extends Component<LoginProps> {
 
   state= {
-    username: '',
+    account: '',
     password: ''
   }
   componentDidMount (){
@@ -25,26 +25,26 @@ class Login extends Component<LoginProps> {
   }
 
   login = () => {
-    const {username, password} = this.state
+    const {account, password} = this.state
     this.props.dispatch({
       type: 'login/login',
       payload: {
-        username,
+        account,
         password
       }
     })
   }
 
   render() {
-    const {username, password} = this.state
+    const {account, password} = this.state
     return (
       <div className={styles.main}>
         <div className={styles.box}>
-          <div className={styles.title}>营销管理中心</div>
+          <div className={styles.title}>新平台管理后台</div>
           <div className={styles.inputBox}>
             <Input
-              value={username}
-              onChange={this.inputChange('username')}
+              value={account}
+              onChange={this.inputChange('account')}
               prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
             />
             <Input

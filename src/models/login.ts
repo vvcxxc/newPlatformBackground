@@ -34,7 +34,8 @@ const Model: LoginModelType = {
   effects: {
     *login({ payload }, { call, put }) {
       let res = yield call(fakeAccountLogin, payload)
-      if(res.status_code == 200){
+      console.log(res)
+      if(res.data){
         localStorage.setItem('token',res.data.token_type + ' ' + res.data.token)
         yield put({
           type: 'user/saveCurrentUser',
@@ -43,7 +44,7 @@ const Model: LoginModelType = {
             avatar: 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
           }
         })
-        router.push('/marketingActivity/activityinfo/cardlist')
+        router.push('/')
       }else{
         notification.error({
           message: res.message,

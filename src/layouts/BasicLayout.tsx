@@ -66,93 +66,6 @@ const BasicLayout: React.FC<BasicLayoutProps> = props => {
    */
   let data = [
     {
-      path: '/marketingActivity',
-      name: '营销活动管理',
-      children: [
-        {
-          path: '/marketingActivity/activityInfo/cardlist',
-          name: '活动信息管理',
-          component: './marketingActivity/activityInfo/cardlist',
-        },
-        {
-          path: '/marketingActivity/merchantcard/cardmanage',
-          name: '卡券信息管理',
-          component: './marketingActivity/merchantcard/cardmanage',
-        },
-      ],
-    },
-    {
-      path: '/lotteryDrawActivity',
-      name: '抽奖活动管理',
-      children: [
-        {
-          path: '/lotteryDrawActivity/containerTruck/',
-          name: '集卡抽奖管理',
-          children: [
-            {
-              path: '/lotteryDrawActivity/containerTruck/containerTruckList',
-              name: '集卡抽奖管理',
-              component: './lotteryDrawActivity/containerTruck/containerTruckList',
-            },
-            {
-              path: '/lotteryDrawActivity/containerTruck/card',
-              name: '卡片管理',
-              children: [
-                {
-                  path: '/lotteryDrawActivity/containerTruck/card/cardList',
-                  name: '卡片管理',
-                  component: './lotteryDrawActivity/containerTruck/card/cardList',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          path: '/lotteryDrawActivity/jackPot/jackPotList',
-          name: '奖池管理',
-          component: './lotteryDrawActivity/jackPot/jackPotList',
-        },
-        {
-          path: '/lotteryDrawActivity/prizes/prizesList',
-          name: '奖品管理',
-          component: './lotteryDrawActivity/prizes/prizesList',
-        },
-      ],
-    },
-    {
-      path: '/merchantManagement',
-      name: '商户管理',
-      children: [
-        {
-          path: '/merchantManagement/merchantList',
-          name: '门店审核',
-          component: './merchantManagement/merchantList'
-        }
-      ]
-    },
-    {
-      path: '/personalManagement',
-      name: '个人管理',
-      children: [
-        {
-          path: '/personalManagement/personalList',
-          name: '个人审核',
-          component: './personalManagement/personalList'
-        }
-      ]
-    },
-    {
-      path: '/communityManagement',
-      name: '社群管理',
-      children: [
-        {
-          path: '/communityManagement/community-list',
-          name: '社群列表',
-          component: './communityManagement/community-list'
-        }
-      ]
-    },
-    {
       path: '/cityManagement',
       name: '城市管理',
       children: [
@@ -202,6 +115,22 @@ const BasicLayout: React.FC<BasicLayoutProps> = props => {
           path: '/couponManagement/panic-coupon-management',
           name: '抢购活动',
           component: './couponManagement/panic-coupon-management'
+        }
+      ]
+    },
+    {
+      path: '/giftManagement',
+      name: '礼品管理',
+      children: [
+        {
+          path: '/giftManagement/gift-list',
+          name: '礼品列表',
+          component: './giftManagement/gift-list'
+        },
+        {
+          path: '/giftManagement/gift-post',
+          name: '礼品邮寄记录',
+          component: './giftManagement/gift-post'
         }
       ]
     },
