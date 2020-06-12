@@ -52,9 +52,19 @@ export default class addCity extends Component {
 
     }
 
-    setRegions = (query: any) => {
-        console.log('query', query.city)
-        // this.setState({ cityList: query.city })
+    setRegions = (id: any) => {
+        console.log('query', id)
+        const {regionsList } = this.state
+        let cityList = []
+        for(let i = 0; i < regionsList.length; i ++){
+          if(regionsList[i].id === id){
+            cityList = regionsList[i].city
+            // this.setState({cityList: regionsList[i].city})
+            break
+          }
+        }
+        console.log(cityList)
+        this.setState({ cityList })
     }
 
     handleChangeIsDefault = (e: any) => {
@@ -85,7 +95,7 @@ export default class addCity extends Component {
                             {
                                 regionsList.length && regionsList.map((item: any, index: number) => {
                                     return (
-                                        <Option key={item.id * Math.random()} value={item}>{item.name}</Option>
+                                        <Option key={item.id} value={item.id}>{item.name}</Option>
                                     )
                                 })
                             }
@@ -98,17 +108,19 @@ export default class addCity extends Component {
                                 width: '250px',
                             }}
                         >
+                            {
+                                cityList.length && cityList.map((item: any, index: number) => {
+                                    return (
+                                        <Option key={item.id} value={item.id}>{item.name}</Option>
+                                    )
+                                })
+                            }
                         </Select>
                     </FormItem>
                     <FormItem label='是否默认'>
                         <Radio.Group value={isDefault} onChange={this.handleChangeIsDefault}>
-                            {
-                                cityList.length && cityList.map((item: any, index: number) => {
-                                    return (
-                                        <Option key={item.id * Math.random()} value={item}>{item.name}</Option>
-                                    )
-                                })
-                            }
+                            <Radio value={1}>是</Radio>
+                            <Radio value={0}>否</Radio> 
                         </Radio.Group>
                     </FormItem>
                     <Form.Item wrapperCol={{ offset: 2 }} >
