@@ -37,7 +37,12 @@ export default class addCity extends Component {
     componentDidMount = () => {
         request('/json/regions').then(res => {
             this.setState({ regionsList: res.data })
-        });
+        }).catch(err => {
+            notification.success({
+                message: '查询省市失败',
+                description: err.message,
+            });
+        })
         // var requestURL = 'http://test.bruin_shop.api.tdianyi.com/storage/json/regions.json';
         // var request = new XMLHttpRequest();
         // request.open('GET', requestURL);
@@ -49,17 +54,17 @@ export default class addCity extends Component {
         // }
     }
 
-    setRegions = (id: any) => {
+    setRegions = (regionsId: any) => {
         const { regionsList } = this.state
         let cityList = [], regions = '';
         for (let i = 0; i < regionsList.length; i++) {
-            if (regionsList[i].id === id) {
+            if (regionsList[i].id === regionsId) {
                 cityList = regionsList[i].city;
                 regions = regionsList[i].name;
                 break
             }
         }
-        this.setState({ cityList, cityId: 0, regions, city: '请选择城市' })
+        this.setState({ cityList, cityId: 0, regions, regionsId, city: '请选择城市' })
     }
     setCity = (cityId: any) => {
         const { cityList } = this.state;
