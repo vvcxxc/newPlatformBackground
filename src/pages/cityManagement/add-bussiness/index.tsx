@@ -53,7 +53,7 @@ export default class addBussiness extends Component {
         this.setState({ name: e.target.value })
     }
     sumbit = () => {
-        const { cityId, name } = this.state;    
+        const { cityId, name } = this.state;
         request('/admin/business', {
             method: "POST",
             data: {
@@ -62,10 +62,17 @@ export default class addBussiness extends Component {
             }
         }).then(res => {
             console.log(res)
-            notification.success({
+            if(res.status_code == 200){
+              notification.success({
                 message: '添加成功',
                 description: res.message,
             });
+            }else {
+              notification.success({
+                message: res.message,
+            });
+            }
+
         }).catch(err => {
             notification.success({
                 message: '添加失败',

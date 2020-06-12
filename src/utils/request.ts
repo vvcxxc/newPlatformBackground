@@ -22,6 +22,9 @@ const codeMessage = {
   502: '网关错误。',
   503: '服务不可用，服务器暂时过载或维护。',
   504: '网关超时。',
+  10101: '短信发送失败',
+  10102: '短信验证码填写错误',
+  10103: '短信已过期'
 };
 
 /**
@@ -47,6 +50,7 @@ const errorHandler = (error: { response: Response }): Response => {
       message: '网络异常',
     });
   }
+  console.log(response)
   return response;
 };
 
@@ -93,11 +97,18 @@ request.interceptors.request.use((url, options) => {
 });
 
 // // response拦截器, 处理response
-request.interceptors.response.use((response, options) => {
+request.interceptors.response.use(async(response, options) => {
   // let token = response.headers.get("x-auth-token");
   // if (token) {
   //   localStorage.setItem("x-auth-token", token);
   // }
+
+  if(response.status == 200) return response;
+  if(response.status == 401) return response;
+  let aa = Promise.resolve(response.json())
+  let a = await aa
+  return a
+
   return response;
 });
 
