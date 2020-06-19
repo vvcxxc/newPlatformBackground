@@ -17,6 +17,7 @@ import {
 import { connect } from 'dva';
 import styles from './index.less';
 import { router } from 'umi';
+import request from '@/utils/request'
 
 const FormItem = Form.Item;
 const { Option } = Select;
@@ -37,7 +38,32 @@ export default Form.create()(
             state = {
                 dataList: [],
                 loading: false,
-                total: 10,
+                total: 0,
+            }
+
+
+
+            componentDidMount() {
+                const { provinceName, cityName, status, currentPage, currentPageSize } = this.props.cityList;
+                this.getListData(currentPage, currentPageSize, provinceName, cityName, status,);
+            }
+
+            getListData = (currentPage: any, currentPageSize: any, provinceName: any, cityName: any, status: any) => {
+                this.setState({
+                    loading: true,
+                });
+                request('/admin/city', {
+                    method: 'GET',
+                    params: {
+                        province: provinceName,
+                        city: cityName,
+                        status,
+                        page: currentPage,
+                        pre_page: currentPageSize
+                    }
+                }).then(res => {
+                    this.setState({ dataList: res.data, loading: false, total: res.meta.pagination.total })
+                })
             }
 
 
@@ -135,7 +161,7 @@ export default Form.create()(
                             </Form>
                         </div>
 
-                        <Button type="primary" htmlType="submit" style={{marginBottom: 20}} onClick={() => router.push('/cityManagement/add-city')}>
+                        <Button type="primary" htmlType="submit" style={{ marginBottom: 20 }} onClick={() => router.push('/cityManagement/add-city')}>
                             新增
                         </Button>
 

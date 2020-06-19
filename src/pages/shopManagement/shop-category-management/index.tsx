@@ -4,6 +4,8 @@ import request from '@/utils/request';
 import { Row, Col, Form, Input, DatePicker, Button, Select, Table, Modal } from 'antd'
 import { connect } from "dva";
 import { router } from "umi";
+import request from '@/utils/request'
+import { text } from "express";
 
 const FormItem = Form.Item;
 
@@ -23,6 +25,26 @@ export default Form.create()(
                 total: 10,
             }
 
+            componentDidMount() {
+                const { categoryName, currentPage, currentPageSize } = this.props.shopCategoryList;
+                this.getListData(categoryName, currentPage, currentPageSize);
+            }
+
+            getListData = (categoryName: any, currentPage: any, currentPageSize: any) => {
+                this.setState({
+                    loading: true,
+                });
+                request('/admin/store/category', {
+                    method: 'GET',
+                    params: {
+                        name: categoryName,
+                        page: currentPage,
+                        per_page: currentPageSize
+                    }
+                }).then(res => {
+                    this.setState({ dataList: res.data, loading: false, total: res.meta.pagination.total })
+                })
+            }
 
             onSearch = async (e: any) => {
                 e.preventDefault();
@@ -33,8 +55,8 @@ export default Form.create()(
                         categoryName,
                     },
                 });
-                // const { currentPage, currentPageSize } = this.props.shopCategoryList;
-                console.log(this.props)
+                const { currentPage, currentPageSize } = this.props.shopCategoryList;
+                this.getListData(categoryName, currentPage, currentPageSize);
             }
 
             handleFormReset = async () => {
@@ -44,6 +66,19 @@ export default Form.create()(
                     type: 'shopCategoryList/resetFussySearch',
                 });
             };
+
+            handleChange = async (pagination: any, filters: any, sorter: any) => {
+                await this.props.dispatch({
+                    type: 'shopCategoryList/setPaginationCurrent',
+                    payload: {
+                        currentPage: pagination.current,
+                        currentPageSize: pagination.pageSize,
+                    },
+                });
+                const { currentPage, currentPageSize } = this.props.shopCategoryList;
+                let categoryName = this.props.form.getFieldValue('categoryName');
+                this.getListData(categoryName, currentPage, currentPageSize);
+            }
 
             render() {
                 const { getFieldDecorator } = this.props.form;
@@ -55,6 +90,32 @@ export default Form.create()(
                         dataIndex: 'id',
                         key: 'id',
                         width: 100
+                    },
+                    {
+                        title: '分类',
+                        dataIndex: 'name',
+                        key: 'name',
+                        width: 100
+                    },
+                    {
+                        title: '图片',
+                        dataIndex: 'img_url',
+                        key: 'img_url',
+                        width: 100,
+                        render: (text, record) => (
+                            <img src={record.img_url} alt="" width="90" />
+                        )
+                    },
+                    {
+                        title: '操作',
+                        dataIndex: 'opearation',
+                        key: 'opearation',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>
+                                <a>编辑</a>
+                            </span>
+                        )
                     },
                 ]
                 return (
@@ -97,7 +158,7 @@ export default Form.create()(
                             columns={columns}
                             dataSource={dataList}
                             loading={loading}
-                            // onChange={this.handleChange}
+                            onChange={this.handleChange}
                             pagination={{
                                 current: currentPage,
                                 defaultPageSize: currentPageSize,
