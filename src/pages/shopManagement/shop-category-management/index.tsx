@@ -67,6 +67,10 @@ export default Form.create()(
                 });
             };
 
+            handleAdd = () => {
+                router.push('/shopManagement/add-cate')
+            }
+
             handleChange = async (pagination: any, filters: any, sorter: any) => {
                 await this.props.dispatch({
                     type: 'shopCategoryList/setPaginationCurrent',
@@ -140,15 +144,20 @@ export default Form.create()(
                                         <Button type="primary" htmlType="submit">
                                             查询
                                     </Button>
+
+                                    </Col>
+                                    <Col>
                                         <Button
+                                            type="primary"
                                             style={{
                                                 marginLeft: 8,
                                             }}
-                                            onClick={this.handleFormReset}
+                                            onClick={this.handleAdd}
                                         >
-                                            重置
+                                            添加
                                     </Button>
                                     </Col>
+
                                 </Row>
                             </Form>
                         </div>

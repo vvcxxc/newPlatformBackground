@@ -165,7 +165,12 @@ export default {
                 {
                   path: '/shopManagement/shop-category-management',
                   name: 'shop-category-management',
-                  component: './shopManagement/shop-category-management'
+                  component: './shopManagement/shop-category-management',
+                },
+                {
+                  path: '/shopManagement/add-cate',
+                  name: 'add-cate',
+                  component: './shopManagement/add-cate',
                 },
                 {
                   path: '/shopManagement/shop-management',
