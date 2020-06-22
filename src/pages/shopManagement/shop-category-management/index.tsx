@@ -107,7 +107,7 @@ export default Form.create()(
                         key: 'img_url',
                         width: 100,
                         render: (text, record) => (
-                            <img src={record.img_url} alt="" width="90" />
+                            <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + record.img_url} alt="" width="90" height="90" />
                         )
                     },
                     {

@@ -112,6 +112,73 @@ export default Form.create()(
                         key: 'id',
                         width: 100
                     },
+                    {
+                        title: '登录账户',
+                        dataIndex: 'account',
+                        key: 'account',
+                        width: 100
+                    },
+                    {
+                        title: '门店名称',
+                        dataIndex: 'store_name',
+                        key: 'store_name',
+                        width: 100
+                    },
+                    {
+                        title: '门头照',
+                        dataIndex: 'id',
+                        key: 'id',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + record.door_photo} alt="" width="90" height="90" />
+                        )
+                    },
+                    {
+                        title: '法人名称',
+                        dataIndex: 'legal_person_name',
+                        key: 'legal_person_name',
+                        width: 100
+                    },
+                    {
+                        title: '门店地址',
+                        dataIndex: 'store_address',
+                        key: 'store_address',
+                        width: 100
+                    },
+                    {
+                        title: '门店电话',
+                        dataIndex: 'store_telephone',
+                        key: 'store_telephone',
+                        width: 100
+                    },
+                    {
+                        title: '经营品类',
+                        dataIndex: 'category',
+                        key: 'category',
+                        width: 100
+                    },
+                    {
+                        title: '审核状态',
+                        dataIndex: 'examine_type',
+                        key: 'examine_type',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>
+                                {
+                                    record.examine_type == 1 ? "未填写" : record.examine_type == 2 ? "待审核" : record.examine_type == 3 ? "通过" : record.examine_type == 4 ? "拒绝" : ""
+                                }
+                            </span>
+                        )
+                    },
+                    {
+                        title: '操作',
+                        dataIndex: 'opearation',
+                        key: 'opearation',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <a>详情</a>
+                        )
+                    },
                 ]
                 return (
                     <div>

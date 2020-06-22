@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import styles from './index.less'
 import request from '@/utils/request';
-import { Card, Row, Col, Form, Input, DatePicker, Button, Select, Table, Modal } from 'antd'
+import { Card, Row, Col, Form, Input, DatePicker, Button, Select, Table, Modal, Radio, Checkbox } from 'antd'
 import { connect } from "dva";
 import { router } from "umi";
+
+const { Option } = Select;
 
 export default class storeAuditOpearation extends Component {
 
@@ -15,19 +17,76 @@ export default class storeAuditOpearation extends Component {
         storeTel: "",
         storeEmail: "",
         bussinessType: "",
-        storeImg: "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1591778757247&di=bc5b5d236c1afaa9ea1bd5e8f1ef9eda&imgtype=0&src=http%3A%2F%2Fn.sinaimg.cn%2Fsinacn15%2F248%2Fw650h398%2F20180319%2F2cb6-fyskeuc2249702.jpg",
-        bussinessImg: "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1591778757247&di=bc5b5d236c1afaa9ea1bd5e8f1ef9eda&imgtype=0&src=http%3A%2F%2Fn.sinaimg.cn%2Fsinacn15%2F248%2Fw650h398%2F20180319%2F2cb6-fyskeuc2249702.jpg",
+        storeImg: "",
+        environmental_photo: [],
+        bussinessImg: "",
         registerNum: "",
         licenseName: "",
         legalPersonName: "",
         validity: "",
+        identity_card_positive_image: "",
+        identity_card_opposite_image: "",
+        identity_card_handheld_image: "",
         IDName: "",
         IDNum: "",
-        IDValidity: ""
+        IDValidity: "",
+        isDefault: null,
+
+        storeMsgFail: false,
+        licenseMsgFail: false,
+        IDMsgFail: false,
+
+        bussinessDatas: []
+    }
+
+    handleChangeIsDefault = (e) => {
+        this.setState({
+            isDefault: e.target.value,
+            storeMsgFail: false,
+            licenseMsgFail: false,
+            IDMsgFail: false,
+        })
     }
 
     componentDidMount() {
-        // request(`/admin/store/examines/${id}`)
+
+        request('/admin/business', {
+            method: 'GET',
+            params: {
+                pre_page: 9999
+            }
+        }).then(res => {
+            this.setState({
+                bussinessDatas: res.data
+            })
+        })
+
+        const id = this.props.location.query.id;
+        request(`/admin/store/examines/${id}`, {
+            method: 'GET',
+        }).then(res => {
+            this.setState({
+                storeName: res.data.store_name,
+                storeAddress: res.data.store_address,
+                detailAddress: res.data.store_address_info,
+                storeTel: res.data.store_telephone,
+                storeEmail: res.data.email,
+                bussinessType: res.data.category_id,
+                storeImg: res.data.door_photo,
+                environmental_photo: res.data.environmental_photo,
+                bussinessImg: res.data.business_license_photo,
+                registerNum: res.data.registration_number,
+                licenseName: res.data.license_name,
+                legalPersonName: res.data.legal_person_name,
+                validity: res.data.license_valid_until,
+                identity_card_positive_image: res.data.identity_card_positive_image,
+                identity_card_opposite_image: res.data.identity_card_opposite_image,
+                identity_card_handheld_image: res.data.identity_card_handheld_image,
+                IDName: res.data.identity_name,
+                IDNum: res.data.identity_card,
+                IDValidity: res.data.identity_card_valid_until
+            })
+        })
     }
 
     render() {
@@ -50,14 +109,23 @@ export default class storeAuditOpearation extends Component {
             storeEmail,
             bussinessType,
             storeImg,
+            environmental_photo,
             bussinessImg,
             registerNum,
             licenseName,
             legalPersonName,
             validity,
+            identity_card_positive_image,
+            identity_card_opposite_image,
+            identity_card_handheld_image,
             IDName,
             IDNum,
-            IDValidity
+            IDValidity,
+            isDefault,
+            storeMsgFail,
+            licenseMsgFail,
+            IDMsgFail,
+            bussinessDatas
         } = this.state;
         return (
             <div>
@@ -73,9 +141,9 @@ export default class storeAuditOpearation extends Component {
                         <Form.Item label="详细地址">
                             <Input value={detailAddress} readOnly />
                         </Form.Item>
-                        <Form.Item label="门牌号">
+                        {/* <Form.Item label="门牌号">
                             <Input value={storeNum} readOnly />
-                        </Form.Item>
+                        </Form.Item> */}
                         <Form.Item label="门店电话">
                             <Input value={storeTel} readOnly />
                         </Form.Item>
@@ -86,16 +154,19 @@ export default class storeAuditOpearation extends Component {
                             <Input value={bussinessType} readOnly />
                         </Form.Item>
                         <Form.Item label="门头图片">
-                            <img src={storeImg} width="150px" height="150px" />
+                            <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + storeImg} width="150px" height="150px" />
                         </Form.Item>
                         <Form.Item label="环境照" wrapperCol={
                             {
-                                xs: { span: 5 },
-                                sm: { span: 5 },
+                                xs: { span: 8 },
+                                sm: { span: 8 },
                             }
                         }>
-                            <img src={"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1591778757247&di=bc5b5d236c1afaa9ea1bd5e8f1ef9eda&imgtype=0&src=http%3A%2F%2Fn.sinaimg.cn%2Fsinacn15%2F248%2Fw650h398%2F20180319%2F2cb6-fyskeuc2249702.jpg"} width="150px" height="150px" style={{ marginRight: '10px' }} />
-                            <img src={"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1591778757247&di=bc5b5d236c1afaa9ea1bd5e8f1ef9eda&imgtype=0&src=http%3A%2F%2Fn.sinaimg.cn%2Fsinacn15%2F248%2Fw650h398%2F20180319%2F2cb6-fyskeuc2249702.jpg"} width="150px" height="150px" />
+                            {
+                                environmental_photo.map(item => (
+                                    <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + item} alt="" width="150" height="150" style={{ marginRight: 10 }} />
+                                ))
+                            }
                         </Form.Item>
                     </Form>
                 </Card>
@@ -109,7 +180,7 @@ export default class storeAuditOpearation extends Component {
                                 sm: { span: 6 },
                             }
                         }>
-                            <img src={bussinessImg} width="350px" height="180px" />
+                            <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + bussinessImg} width="350px" height="180px" />
                         </Form.Item>
                         <Form.Item label="注册号">
                             <Input value={registerNum} readOnly />
@@ -135,9 +206,9 @@ export default class storeAuditOpearation extends Component {
                                 sm: { span: 8 },
                             }
                         }>
-                            <img src={"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1591778757247&di=bc5b5d236c1afaa9ea1bd5e8f1ef9eda&imgtype=0&src=http%3A%2F%2Fn.sinaimg.cn%2Fsinacn15%2F248%2Fw650h398%2F20180319%2F2cb6-fyskeuc2249702.jpg"} width="150px" height="150px" style={{ marginRight: '10px' }} />
-                            <img src={"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1591778757247&di=bc5b5d236c1afaa9ea1bd5e8f1ef9eda&imgtype=0&src=http%3A%2F%2Fn.sinaimg.cn%2Fsinacn15%2F248%2Fw650h398%2F20180319%2F2cb6-fyskeuc2249702.jpg"} width="150px" height="150px" style={{ marginRight: '10px' }} />
-                            <img src={"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1591778757247&di=bc5b5d236c1afaa9ea1bd5e8f1ef9eda&imgtype=0&src=http%3A%2F%2Fn.sinaimg.cn%2Fsinacn15%2F248%2Fw650h398%2F20180319%2F2cb6-fyskeuc2249702.jpg"} width="150px" height="150px" />
+                            <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + identity_card_positive_image} width="150px" height="150px" style={{ marginRight: '10px' }} />
+                            <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + identity_card_opposite_image} width="150px" height="150px" style={{ marginRight: '10px' }} />
+                            <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + identity_card_handheld_image} width="150px" height="150px" />
                         </Form.Item>
                         <Form.Item label="姓名">
                             <Input value={IDName} readOnly />
@@ -153,7 +224,75 @@ export default class storeAuditOpearation extends Component {
 
                 <Card title="门店审核" bordered={false} style={{ width: "100%", marginTop: "20px" }}>
                     <Form {...formItemLayout}
-                    ></Form>
+                    >
+                        <Form.Item label="审核结果">
+                            <Radio.Group value={isDefault} onChange={this.handleChangeIsDefault}>
+                                <Radio value={1}>通过</Radio>
+                                <Radio value={0}>不通过</Radio>
+                            </Radio.Group>
+                        </Form.Item>
+                        {
+                            isDefault == 1 ? (
+                                <Form.Item label="商圈">
+                                    <Select
+                                        placeholder="请选择"
+                                        style={{
+                                            width: '100%',
+                                        }}
+                                    >
+                                        {
+                                            bussinessDatas.map(item => (
+                                                <Option value={item.name}>{item.name}</Option>
+                                            ))
+                                        }
+                                    </Select>,
+                                </Form.Item>
+                            ) : isDefault == 0 ? (
+                                <Form.Item label="失败类型" wrapperCol={
+                                    {
+                                        xs: { span: 8 },
+                                        sm: { span: 8 },
+                                    }
+                                }>
+                                    <div style={{ display: 'flex' }}>
+                                        <Checkbox style={{ flex: 1 }} onChange={(e) => this.setState({ storeMsgFail: e.target.checked })}>门店信息</Checkbox>
+                                        {
+                                            storeMsgFail ? (
+                                                <div style={{ flex: 2, display: 'flex', alignItems: 'center' }} >
+                                                    <span style={{ flex: 1 }}>失败原因</span>
+                                                    <Input style={{ flex: 3 }} placeholder="Basic usage" />
+                                                </div>
+                                            ) : ""
+                                        }
+                                    </div>
+                                    <br />
+                                    <div style={{ display: 'flex' }}>
+                                        <Checkbox style={{ flex: 1 }} onChange={(e) => this.setState({ licenseMsgFail: e.target.checked })}>营业执照信息</Checkbox>
+                                        {
+                                            licenseMsgFail ? (
+                                                <div style={{ flex: 2, display: 'flex', alignItems: 'center' }} >
+                                                    <span style={{ flex: 1 }}>失败原因</span>
+                                                    <Input style={{ flex: 3 }} placeholder="Basic usage" />
+                                                </div>
+                                            ) : ""
+                                        }
+                                    </div>
+                                    <br />
+                                    <div style={{ display: 'flex' }}>
+                                        <Checkbox style={{ flex: 1 }} onChange={(e) => this.setState({ IDMsgFail: e.target.checked })}>法人身份证信息</Checkbox>
+                                        {
+                                            IDMsgFail ? (
+                                                <div style={{ flex: 2, display: 'flex', alignItems: 'center' }} >
+                                                    <span style={{ flex: 1 }}>失败原因</span>
+                                                    <Input style={{ flex: 3 }} placeholder="Basic usage" />
+                                                </div>
+                                            ) : ""
+                                        }
+                                    </div>
+                                </Form.Item>
+                            ) : ""
+                        }
+                    </Form>
                 </Card>
             </div >
         )
