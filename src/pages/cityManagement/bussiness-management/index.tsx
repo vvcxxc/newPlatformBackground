@@ -17,6 +17,7 @@ import {
 import { connect } from 'dva';
 import styles from './index.less';
 import { router } from 'umi';
+import request from '@/utils/request'
 
 const FormItem = Form.Item;
 const { Option } = Select;
@@ -38,6 +39,26 @@ export default Form.create()(
                 dataList: [],
                 loading: false,
                 total: 10,
+
+                cityDatas: []
+            }
+
+
+            componentDidMount() {
+                const { bussinessName, cityName, currentPage, currentPageSize } = this.props.bussinessList;
+                this.getListData(currentPage, currentPageSize, bussinessName, cityName);
+
+
+                request('/admin/city', {
+                    method: 'GET',
+                    params: {
+                        status: 1
+                    }
+                }).then(res => {
+                    this.setState({
+                        cityDatas: res.data
+                    })
+                })
             }
 
             onSearch = async (e: any) => {
@@ -51,8 +72,27 @@ export default Form.create()(
                         cityName,
                     },
                 });
-                // const { currentPage, currentPageSize } = this.props.bussinessList;
-                console.log(this.props)
+                const { currentPage, currentPageSize } = this.props.bussinessList;
+                this.getListData(currentPage, currentPageSize, bussinessName, cityName);
+            }
+
+
+            getListData = (currentPage: any, currentPageSize: any, bussinessName: any, cityName: any) => {
+                this.setState({
+                    loading: true,
+                });
+                request('/admin/business', {
+                    method: 'GET',
+                    params: {
+                        name: bussinessName,
+                        city: cityName,
+                        status,
+                        page: currentPage,
+                        pre_page: currentPageSize
+                    }
+                }).then(res => {
+                    this.setState({ dataList: res.data, loading: false, total: res.meta.pagination.total })
+                })
             }
 
 
@@ -64,9 +104,23 @@ export default Form.create()(
                 });
             };
 
+            handleChange = async (pagination: any, filters: any, sorter: any) => {
+                await this.props.dispatch({
+                    type: 'bussinessList/setPaginationCurrent',
+                    payload: {
+                        currentPage: pagination.current,
+                        currentPageSize: pagination.pageSize,
+                    },
+                });
+                const { currentPage, currentPageSize } = this.props.bussinessList;
+                let bussinessName = this.props.form.getFieldValue('bussinessName');
+                let cityName = this.props.form.getFieldValue('cityName');
+                this.getListData(currentPage, currentPageSize, bussinessName, cityName);
+            }
+
             render() {
                 const { getFieldDecorator } = this.props.form;
-                const { dataList, loading, total } = this.state;
+                const { dataList, loading, total, cityDatas } = this.state;
                 const { bussinessName, cityName, currentPage, currentPageSize } = this.props.bussinessList;
                 const columns = [
                     {
@@ -74,6 +128,40 @@ export default Form.create()(
                         dataIndex: 'id',
                         key: 'id',
                         width: 100
+                    },
+                    {
+                        title: '商圈名称',
+                        dataIndex: 'name',
+                        key: 'name',
+                        width: 100
+                    },
+                    {
+                        title: '所属城市',
+                        dataIndex: 'city',
+                        key: 'city',
+                        width: 100
+                    },
+                    {
+                        title: '状态',
+                        dataIndex: 'type',
+                        key: 'type',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>{record.type == 1 ? "开通" : "关闭"}</span>
+                        )
+                    },
+                    {
+                        title: '操作',
+                        dataIndex: 'opearation',
+                        key: 'opearation',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <div>
+                                <a>{record.type == 1 ? "关闭" : "开通"}</a>
+                                <Divider type="vertical" />
+                                <a>编辑</a>
+                            </div>
+                        )
                     },
                 ]
                 return (
@@ -103,6 +191,11 @@ export default Form.create()(
                                                         width: '100%',
                                                     }}
                                                 >
+                                                    {
+                                                        cityDatas.map(item => (
+                                                            <Option value={item.city_name}>{item.city_name}</Option>
+                                                        ))
+                                                    }
                                                 </Select>
                                             )}
                                         </FormItem>
@@ -133,7 +226,7 @@ export default Form.create()(
                             columns={columns}
                             dataSource={dataList}
                             loading={loading}
-                            // onChange={this.handleChange}
+                            onChange={this.handleChange}
                             pagination={{
                                 current: currentPage,
                                 defaultPageSize: currentPageSize,

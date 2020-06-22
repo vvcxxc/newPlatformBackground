@@ -86,8 +86,8 @@ export default class addCity extends Component {
         const { regionsId, cityId, isDefault } = this.state;
         console.log(regionsId, cityId, isDefault);
         request('/admin/city', {
-            method: "GET",
-            params: {
+            method: "POST",
+            data: {
                 city_id: cityId,
                 province_id: regionsId,
                 is_default: isDefault

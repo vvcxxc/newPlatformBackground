@@ -22,6 +22,24 @@ export default Form.create()(
                 dataList: [],
                 loading: false,
                 total: 10,
+
+                categoryDatas: []
+            }
+
+
+            componentDidMount() {
+                const { storeName, telephone, categoryName, currentPage, currentPageSize } = this.props.storeAuditList;
+                this.getListData(currentPage, currentPageSize, storeName, telephone, categoryName,);
+
+
+                request('/admin/store/category', {
+                    method: 'GET',
+                    params: {}
+                }).then(res => {
+                    this.setState({
+                        categoryDatas: res.data
+                    })
+                })
             }
 
             onSearch = async (e: any) => {
@@ -37,9 +55,43 @@ export default Form.create()(
                         categoryName,
                     },
                 });
-                // const { currentPage, currentPageSize } = this.props.storeAuditList;
-                console.log(this.props)
+                const { currentPage, currentPageSize } = this.props.storeAuditList;
+                this.getListData(currentPage, currentPageSize, storeName, telephone, categoryName,);
             }
+
+            getListData = (currentPage: any, currentPageSize: any, storeName: any, telephone: any, categoryName: any) => {
+                this.setState({
+                    loading: true,
+                });
+                request('/admin/store/examines', {
+                    method: 'GET',
+                    params: {
+                        storeName: storeName,
+                        account: telephone,
+                        category: categoryName,
+                        page: currentPage,
+                        pre_page: currentPageSize
+                    }
+                }).then(res => {
+                    this.setState({ dataList: res.data, loading: false, total: res.meta.pagination.total })
+                })
+            }
+
+            handleChange = async (pagination: any, filters: any, sorter: any) => {
+                await this.props.dispatch({
+                    type: 'storeAuditList/setPaginationCurrent',
+                    payload: {
+                        currentPage: pagination.current,
+                        currentPageSize: pagination.pageSize,
+                    },
+                });
+                const { currentPage, currentPageSize } = this.props.storeAuditList;
+                let storeName = this.props.form.getFieldValue('storeName');
+                let telephone = this.props.form.getFieldValue('telephone');
+                let categoryName = this.props.form.getFieldValue('categoryName');
+                this.getListData(currentPage, currentPageSize, storeName, telephone, categoryName,);
+            }
+
 
             handleFormReset = async () => {
                 const { form, dispatch } = this.props;
@@ -51,7 +103,7 @@ export default Form.create()(
 
             render() {
                 const { getFieldDecorator } = this.props.form;
-                const { dataList, loading, total } = this.state;
+                const { dataList, loading, total, categoryDatas } = this.state;
                 const { currentPage, currentPageSize, storeName, telephone, categoryName } = this.props.storeAuditList;
                 const columns = [
                     {
@@ -59,6 +111,66 @@ export default Form.create()(
                         dataIndex: 'id',
                         key: 'id',
                         width: 100
+                    },
+                    {
+                        title: '申请时间',
+                        dataIndex: 'created_at',
+                        key: 'created_at',
+                        width: 100
+                    },
+                    {
+                        title: '登录账户',
+                        dataIndex: 'account',
+                        key: 'account',
+                        width: 100
+                    },
+                    {
+                        title: '门店名称',
+                        dataIndex: 'store_name',
+                        key: 'store_name',
+                        width: 100
+                    },
+                    {
+                        title: '法人名称',
+                        dataIndex: 'legal_person_name',
+                        key: 'legal_person_name',
+                        width: 100
+                    },
+                    {
+                        title: '门店地址',
+                        dataIndex: 'store_address',
+                        key: 'store_address',
+                        width: 100
+                    },
+                    {
+                        title: '门店电话',
+                        dataIndex: 'store_address',
+                        key: 'store_address',
+                        width: 100
+                    },
+                    {
+                        title: '经营品类',
+                        dataIndex: 'category',
+                        key: 'category',
+                        width: 100
+                    },
+                    {
+                        title: '门店状态',
+                        dataIndex: 'examine_type',
+                        key: 'examine_type',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>{record.examine_type == 1 ? "未填写" : record.examine_type == 2 ? "待审核" : record.examine_type == 3 ? "通过" : record.examine_type == 4 ? "拒绝" : ""}</span>
+                        )
+                    },
+                    {
+                        title: '操作',
+                        dataIndex: 'opearation',
+                        key: 'opearation',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <a onClick={() => router.push(`/shopManagement/store-audit-opearation?id=${record.id}`)}>审核</a>
+                        )
                     },
                 ]
                 return (
@@ -95,8 +207,11 @@ export default Form.create()(
                                                         width: '100%',
                                                     }}
                                                 >
-                                                    <Option value="0">全部</Option>
-                                                    <Option value="1">餐饮</Option>
+                                                    {
+                                                        categoryDatas.map(item => (
+                                                            <Option value={item.id}>{item.name}</Option>
+                                                        ))
+                                                    }
                                                 </Select>,
                                             )}
                                         </FormItem>
@@ -123,7 +238,7 @@ export default Form.create()(
                             columns={columns}
                             dataSource={dataList}
                             loading={loading}
-                            // onChange={this.handleChange}
+                            onChange={this.handleChange}
                             pagination={{
                                 current: currentPage,
                                 defaultPageSize: currentPageSize,

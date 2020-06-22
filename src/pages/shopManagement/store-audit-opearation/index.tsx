@@ -26,6 +26,10 @@ export default class storeAuditOpearation extends Component {
         IDValidity: ""
     }
 
+    componentDidMount() {
+        // request(`/admin/store/examines/${id}`)
+    }
+
     render() {
         const formItemLayout = {
             labelCol: {
