@@ -62,22 +62,13 @@ export default class addBussiness extends Component {
             }
         }).then(res => {
             console.log(res)
-            if(res.status_code == 200){
+            if(res.data.id){
               notification.success({
                 message: '添加成功',
-                description: res.message,
-            });
-            }else {
-              notification.success({
-                message: res.message,
             });
             }
 
         }).catch(err => {
-            notification.success({
-                message: '添加失败',
-                description: err.message,
-            });
         });
     }
     render() {

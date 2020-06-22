@@ -93,15 +93,14 @@ export default class addCity extends Component {
                 is_default: isDefault
             }
         }).then(res => {
+          if(res.data.id){
             notification.success({
-                message: '添加成功',
-                description: res.message,
-            });
+              message: '添加成功',
+              description: res.message,
+          });
+          }
+
         }).catch(err => {
-            notification.success({
-                message: '添加失败',
-                description: err.message,
-            });
         });
     }
     render() {
