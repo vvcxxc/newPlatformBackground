@@ -40,7 +40,7 @@ const errorHandler = async(error: { response: Response }): Response => {
 
     notification.error({
       message: a.message,
-      description: errorText,
+      // description: errorText,
     });
     if (response.status == 401) {
       router.push('/user/login');
