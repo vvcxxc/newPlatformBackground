@@ -26,6 +26,13 @@ const Model = {
                 storeName: undefined,
             };
         },
+        setPaginationCurrent(state: any, action: any) {
+            return {
+                ...state,
+                currentPage: action.payload.currentPage,
+                currentPageSize: action.payload.currentPageSize,
+            };
+        },
     }
 }
 
