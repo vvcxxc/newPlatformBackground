@@ -98,6 +98,7 @@ export default class addCity extends Component {
               message: '添加成功',
               description: res.message,
           });
+          router.goBack()
           }
 
         }).catch(err => {
