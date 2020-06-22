@@ -33,7 +33,7 @@ export default class AddCate extends Component {
   }
 
   imgChange = (url: string) => {
-    this.setState({ img_url: 'http://tmwl.oss-cn-shenzhen.aliyuncs.com/' + url })
+    this.setState({ img_url:  url })
   }
 
   submit = () => {
