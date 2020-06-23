@@ -22,6 +22,42 @@ export default Form.create()(
                 dataList: [],
                 loading: false,
                 total: 10,
+
+                categoryDatas: []
+            }
+
+            componentDidMount() {
+                const { storeName, telephone, categoryName, currentPage, currentPageSize } = this.props.storeAuditFailList;
+                this.getListData(currentPage, currentPageSize, storeName, telephone, categoryName,);
+
+
+                request('/admin/store/category', {
+                    method: 'GET',
+                    params: {}
+                }).then(res => {
+                    this.setState({
+                        categoryDatas: res.data
+                    })
+                })
+            }
+
+
+            getListData = (currentPage: any, currentPageSize: any, storeName: any, telephone: any, categoryName: any) => {
+                this.setState({
+                    loading: true,
+                });
+                request('/admin/store/failure', {
+                    method: 'GET',
+                    params: {
+                        storeName: storeName,
+                        account: telephone,
+                        category: categoryName,
+                        page: currentPage,
+                        pre_page: currentPageSize
+                    }
+                }).then(res => {
+                    this.setState({ dataList: res.data, loading: false, total: res.meta.pagination.total })
+                })
             }
 
             onSearch = async (e: any) => {
@@ -37,8 +73,24 @@ export default Form.create()(
                         categoryName,
                     },
                 });
-                // const { currentPage, currentPageSize } = this.props.storeAuditFailList;
-                console.log(this.props)
+                const { currentPage, currentPageSize } = this.props.storeAuditFailList;
+                this.getListData(currentPage, currentPageSize, storeName, telephone, categoryName,);
+            }
+
+
+            handleChange = async (pagination: any, filters: any, sorter: any) => {
+                await this.props.dispatch({
+                    type: 'storeAuditFailList/setPaginationCurrent',
+                    payload: {
+                        currentPage: pagination.current,
+                        currentPageSize: pagination.pageSize,
+                    },
+                });
+                const { currentPage, currentPageSize } = this.props.storeAuditFailList;
+                let storeName = this.props.form.getFieldValue('storeName');
+                let telephone = this.props.form.getFieldValue('telephone');
+                let categoryName = this.props.form.getFieldValue('categoryName');
+                this.getListData(currentPage, currentPageSize, storeName, telephone, categoryName,);
             }
 
             handleFormReset = async () => {
@@ -51,7 +103,7 @@ export default Form.create()(
 
             render() {
                 const { getFieldDecorator } = this.props.form;
-                const { dataList, loading, total } = this.state;
+                const { dataList, loading, total, categoryDatas } = this.state;
                 const { currentPage, currentPageSize, storeName, telephone, categoryName } = this.props.storeAuditFailList;
                 const columns = [
                     {
@@ -59,6 +111,73 @@ export default Form.create()(
                         dataIndex: 'id',
                         key: 'id',
                         width: 100
+                    },
+                    {
+                        title: '登录账户',
+                        dataIndex: 'account',
+                        key: 'account',
+                        width: 100
+                    },
+                    {
+                        title: '门店名称',
+                        dataIndex: 'store_name',
+                        key: 'store_name',
+                        width: 100
+                    },
+                    {
+                        title: '门头照',
+                        dataIndex: 'id',
+                        key: 'id',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + record.door_photo} alt="" width="90" height="90" />
+                        )
+                    },
+                    {
+                        title: '法人名称',
+                        dataIndex: 'legal_person_name',
+                        key: 'legal_person_name',
+                        width: 100
+                    },
+                    {
+                        title: '门店地址',
+                        dataIndex: 'store_address',
+                        key: 'store_address',
+                        width: 100
+                    },
+                    {
+                        title: '门店电话',
+                        dataIndex: 'store_telephone',
+                        key: 'store_telephone',
+                        width: 100
+                    },
+                    {
+                        title: '经营品类',
+                        dataIndex: 'category',
+                        key: 'category',
+                        width: 100
+                    },
+                    {
+                        title: '审核状态',
+                        dataIndex: 'examine_type',
+                        key: 'examine_type',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>
+                                {
+                                    record.examine_type == 1 ? "未填写" : record.examine_type == 2 ? "待审核" : record.examine_type == 3 ? "通过" : record.examine_type == 4 ? "拒绝" : ""
+                                }
+                            </span>
+                        )
+                    },
+                    {
+                        title: '操作',
+                        dataIndex: 'opearation',
+                        key: 'opearation',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <a>详情</a>
+                        )
                     },
                 ]
                 return (
@@ -95,8 +214,11 @@ export default Form.create()(
                                                         width: '100%',
                                                     }}
                                                 >
-                                                    <Option value="0">全部</Option>
-                                                    <Option value="1">餐饮</Option>
+                                                    {
+                                                        categoryDatas.map(item => (
+                                                            <Option value={item.id}>{item.name}</Option>
+                                                        ))
+                                                    }
                                                 </Select>,
                                             )}
                                         </FormItem>
@@ -123,7 +245,7 @@ export default Form.create()(
                             columns={columns}
                             dataSource={dataList}
                             loading={loading}
-                            // onChange={this.handleChange}
+                            onChange={this.handleChange}
                             pagination={{
                                 current: currentPage,
                                 defaultPageSize: currentPageSize,

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import styles from './index.less'
 import request from '@/utils/request';
-import { Row, Col, Form, Input, DatePicker, Button, Select, Table, Modal } from 'antd'
+import { Row, Col, Form, Input, DatePicker, Button, Select, Table, Modal, Divider } from 'antd'
 import { connect } from "dva";
 import { router } from "umi";
 
@@ -23,6 +23,29 @@ export default Form.create()(
                 total: 10,
             }
 
+
+            componentDidMount() {
+                const { useKnow, currentPage, currentPageSize } = this.props.useKnowList;
+                this.getListData(currentPage, currentPageSize, useKnow);
+            }
+
+
+            getListData = (currentPage: any, currentPageSize: any, useKnow: any) => {
+                this.setState({
+                    loading: true,
+                });
+                request('/admin/couponDescription', {
+                    method: 'GET',
+                    params: {
+                        content: useKnow,
+                        page: currentPage,
+                        pre_page: currentPageSize
+                    }
+                }).then(res => {
+                    this.setState({ dataList: res.data, loading: false, total: res.meta.pagination.total })
+                })
+            }
+
             onSearch = async (e: any) => {
                 e.preventDefault();
                 let useKnow = this.props.form.getFieldValue('useKnow');
@@ -32,8 +55,21 @@ export default Form.create()(
                         useKnow
                     },
                 });
-                // const { currentPage, currentPageSize } = this.props.useKnowList;
-                console.log(this.props)
+                const { currentPage, currentPageSize } = this.props.useKnowList;
+                this.getListData(currentPage, currentPageSize, useKnow);
+            }
+
+            handleChange = async (pagination: any, filters: any, sorter: any) => {
+                await this.props.dispatch({
+                    type: 'useKnowList/setPaginationCurrent',
+                    payload: {
+                        currentPage: pagination.current,
+                        currentPageSize: pagination.pageSize,
+                    },
+                });
+                const { currentPage, currentPageSize } = this.props.useKnowList;
+                let useKnow = this.props.form.getFieldValue('useKnow');
+                this.getListData(currentPage, currentPageSize, useKnow);
             }
 
             handleFormReset = async () => {
@@ -54,6 +90,34 @@ export default Form.create()(
                         dataIndex: 'id',
                         key: 'id',
                         width: 100
+                    },
+                    {
+                        title: '使用须知',
+                        dataIndex: 'content',
+                        key: 'content',
+                        width: 100
+                    },
+                    {
+                        title: '状态',
+                        dataIndex: 'is_show',
+                        key: 'is_show',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>{record.is_show == 1 ? "启用" : "禁用"}</span>
+                        )
+                    },
+                    {
+                        title: '操作',
+                        dataIndex: 'opearation',
+                        key: 'opearation',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <div>
+                                <a>{record.is_show == 1 ? "禁用" : "启用"}</a>
+                                <Divider type="vertical" />
+                                <a>编辑</a>
+                            </div>
+                        )
                     },
                 ]
                 return (
@@ -96,7 +160,7 @@ export default Form.create()(
                             columns={columns}
                             dataSource={dataList}
                             loading={loading}
-                            // onChange={this.handleChange}
+                            onChange={this.handleChange}
                             pagination={{
                                 current: currentPage,
                                 defaultPageSize: currentPageSize,

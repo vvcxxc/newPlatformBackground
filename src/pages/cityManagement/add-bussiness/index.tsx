@@ -16,6 +16,7 @@ import {
 } from 'antd';
 import styles from './index.less';
 import request from '@/utils/request'
+import { router } from 'umi';
 
 const FormItem = Form.Item;
 const { Option } = Select;
@@ -24,7 +25,7 @@ export default class addBussiness extends Component {
     state = {
         cityList: [],
         cityId: 0,
-        city:'请选择城市',
+        city: '请选择城市',
         name: ''
     }
     componentDidMount = () => {
@@ -50,7 +51,9 @@ export default class addBussiness extends Component {
         this.setState({ cityId, city })
     }
     changeName = (e: any) => {
+      if(e.target.value.length <= 20) {
         this.setState({ name: e.target.value })
+      }
     }
     sumbit = () => {
         const { cityId, name } = this.state;
@@ -62,22 +65,14 @@ export default class addBussiness extends Component {
             }
         }).then(res => {
             console.log(res)
-            if(res.status_code == 200){
-              notification.success({
-                message: '添加成功',
-                description: res.message,
-            });
-            }else {
-              notification.success({
-                message: res.message,
-            });
+            if (res.data.id) {
+                notification.success({
+                    message: '添加成功',
+                });
+                router.goBack()
             }
 
         }).catch(err => {
-            notification.success({
-                message: '添加失败',
-                description: err.message,
-            });
         });
     }
     render() {
@@ -87,7 +82,7 @@ export default class addBussiness extends Component {
                 sm: { span: 2 },
             }
         };
-        const { cityList } = this.state;
+        const { cityList, } = this.state;
         return (
             <div>
                 <Form {...formItemLayout}>
@@ -119,7 +114,7 @@ export default class addBussiness extends Component {
                     </FormItem>
                     <Form.Item wrapperCol={{ offset: 2 }} >
                         <Button type="primary" style={{ width: "120px" }}
-                           onClick={this.sumbit}
+                            onClick={this.sumbit}
                         >确定</Button>
                     </Form.Item>
                 </Form>

@@ -19,6 +19,7 @@ import { connect } from 'dva';
 import styles from './index.less';
 import request from '@/utils/request'
 import Item from 'antd/lib/list/Item';
+import router from 'umi/router'
 const FormItem = Form.Item;
 const { Option } = Select;
 
@@ -86,22 +87,22 @@ export default class addCity extends Component {
         const { regionsId, cityId, isDefault } = this.state;
         console.log(regionsId, cityId, isDefault);
         request('/admin/city', {
-            method: "GET",
-            params: {
+            method: "POST",
+            data: {
                 city_id: cityId,
                 province_id: regionsId,
                 is_default: isDefault
             }
         }).then(res => {
+          if(res.data.id){
             notification.success({
-                message: '添加成功',
-                description: res.message,
-            });
+              message: '添加成功',
+              description: res.message,
+          });
+          router.goBack()
+          }
+
         }).catch(err => {
-            notification.success({
-                message: '添加失败',
-                description: err.message,
-            });
         });
     }
     render() {

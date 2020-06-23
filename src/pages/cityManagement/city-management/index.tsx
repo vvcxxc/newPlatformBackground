@@ -17,6 +17,7 @@ import {
 import { connect } from 'dva';
 import styles from './index.less';
 import { router } from 'umi';
+import request from '@/utils/request'
 
 const FormItem = Form.Item;
 const { Option } = Select;
@@ -37,7 +38,32 @@ export default Form.create()(
             state = {
                 dataList: [],
                 loading: false,
-                total: 10,
+                total: 0,
+            }
+
+
+
+            componentDidMount() {
+                const { provinceName, cityName, status, currentPage, currentPageSize } = this.props.cityList;
+                this.getListData(currentPage, currentPageSize, provinceName, cityName, status,);
+            }
+
+            getListData = (currentPage: any, currentPageSize: any, provinceName: any, cityName: any, status: any) => {
+                this.setState({
+                    loading: true,
+                });
+                request('/admin/city', {
+                    method: 'GET',
+                    params: {
+                        province: provinceName,
+                        city: cityName,
+                        status,
+                        page: currentPage,
+                        pre_page: currentPageSize
+                    }
+                }).then(res => {
+                    this.setState({ dataList: res.data, loading: false, total: res.meta.pagination.total })
+                })
             }
 
 
@@ -54,8 +80,8 @@ export default Form.create()(
                         status
                     },
                 });
-                // const { currentPage, currentPageSize } = this.props.cityList;
-                console.log(this.props)
+                const { currentPage, currentPageSize } = this.props.cityList;
+                this.getListData(currentPage, currentPageSize, provinceName, cityName, status,);
             }
 
             handleFormReset = async () => {
@@ -65,6 +91,21 @@ export default Form.create()(
                     type: 'cityList/resetFussySearch',
                 });
             };
+
+            handleChange = async (pagination: any, filters: any, sorter: any) => {
+                await this.props.dispatch({
+                    type: 'cityList/setPaginationCurrent',
+                    payload: {
+                        currentPage: pagination.current,
+                        currentPageSize: pagination.pageSize,
+                    },
+                });
+                const { currentPage, currentPageSize } = this.props.cityList;
+                let provinceName = this.props.form.getFieldValue('provinceName');
+                let cityName = this.props.form.getFieldValue('cityName');
+                let status = this.props.form.getFieldValue('status');
+                this.getListData(currentPage, currentPageSize, provinceName, cityName, status,);
+            }
 
             render() {
                 const { getFieldDecorator } = this.props.form;
@@ -76,6 +117,49 @@ export default Form.create()(
                         dataIndex: 'id',
                         key: 'id',
                         width: 100
+                    },
+                    {
+                        title: '省份',
+                        dataIndex: 'province_name',
+                        key: 'province_name',
+                        width: 100
+                    },
+                    {
+                        title: '城市',
+                        dataIndex: 'city_name',
+                        key: 'city_name',
+                        width: 100
+                    },
+                    {
+                        title: '是否默认',
+                        dataIndex: 'is_default',
+                        key: 'is_default',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>{record.is_default == 1 ? "是" : "否"}</span>
+                        )
+                    },
+                    {
+                        title: '状态',
+                        dataIndex: 'status',
+                        key: 'status',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>{record.status == 1 ? "开通" : "关闭"}</span>
+                        )
+                    },
+                    {
+                        title: '操作',
+                        dataIndex: 'id',
+                        key: 'id',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <div>
+                                <a>{record.status == 1 ? "关闭" : "开通"}</a>
+                                <Divider type="vertical" />
+                                <a>编辑</a>
+                            </div>
+                        )
                     },
                 ]
                 return (
@@ -112,8 +196,8 @@ export default Form.create()(
                                                         width: '100%',
                                                     }}
                                                 >
-                                                    <Option value="0">开通</Option>
-                                                    <Option value="1">关闭</Option>
+                                                    <Option value="1">开通</Option>
+                                                    <Option value="0">关闭</Option>
                                                 </Select>
                                             )}
                                         </FormItem>
@@ -135,7 +219,7 @@ export default Form.create()(
                             </Form>
                         </div>
 
-                        <Button type="primary" htmlType="submit" style={{marginBottom: 20}} onClick={() => router.push('/cityManagement/add-city')}>
+                        <Button type="primary" htmlType="submit" style={{ marginBottom: 20 }} onClick={() => router.push('/cityManagement/add-city')}>
                             新增
                         </Button>
 
@@ -144,7 +228,7 @@ export default Form.create()(
                             columns={columns}
                             dataSource={dataList}
                             loading={loading}
-                            // onChange={this.handleChange}
+                            onChange={this.handleChange}
                             pagination={{
                                 current: currentPage,
                                 defaultPageSize: currentPageSize,

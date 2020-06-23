@@ -8,7 +8,7 @@ import configs from '../../env';
 import { router } from 'umi';
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
-  201: '新建或修改数据成功。',
+  201: '创建成功。',
   202: '一个请求已经进入后台排队（异步任务）。',
   204: '删除数据成功。',
   400: '发出的请求有错误，服务器没有进行新建或修改数据的操作。',
@@ -30,16 +30,17 @@ const codeMessage = {
 /**
  * 异常处理程序
  */
-const errorHandler = (error: { response: Response }): Response => {
+const errorHandler = async(error: { response: Response }): Response => {
   const { response } = error;
-  console.log(response)
+  let aa = Promise.resolve(response.json())
+  let a = await aa
   if (response && response.status) {
     const errorText = codeMessage[response.status] || response.statusText;
     const { status, url } = response;
 
     notification.error({
-      message: `请求错误 ${status}: ${url}`,
-      description: errorText,
+      message: a.message,
+      // description: errorText,
     });
     if (response.status == 401) {
       router.push('/user/login');
@@ -50,8 +51,7 @@ const errorHandler = (error: { response: Response }): Response => {
       message: '网络异常',
     });
   }
-  console.log(response)
-  return response;
+  return a;
 };
 
 /**
@@ -64,7 +64,6 @@ const request = extend({
 
 // request拦截器, 改变url 或 options.
 request.interceptors.request.use((url, options) => {
-  console.log(process.env.API_ENV)
   let API = configs[process.env.API_ENV].API || 'http://test.platform_admin_api.tdianyi.com';
   let token = localStorage.getItem('token');
   let Url = '';
@@ -103,11 +102,12 @@ request.interceptors.response.use(async(response, options) => {
   //   localStorage.setItem("x-auth-token", token);
   // }
 
-  if(response.status == 200) return response;
+  // if(response.status == 200) return response;
   if(response.status == 401) return response;
-  let aa = Promise.resolve(response.json())
-  let a = await aa
-  return a
+  // let aa = Promise.resolve(response.json())
+  // let a = await aa
+
+  // return a
 
   return response;
 });

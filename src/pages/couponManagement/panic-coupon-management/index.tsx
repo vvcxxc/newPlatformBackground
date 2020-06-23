@@ -17,6 +17,7 @@ import {
 import { connect } from 'dva';
 import styles from './index.less';
 import { router } from 'umi';
+import request from '@/utils/request'
 
 const FormItem = Form.Item;
 const { Option } = Select;
@@ -38,6 +39,30 @@ export default Form.create()(
                 dataList: [],
                 loading: false,
                 total: 10,
+            }
+
+            componentDidMount() {
+                const { panicStatus, panicCouponType, panicCouponName, storeName, currentPage, currentPageSize } = this.props.panicCouponList;
+                this.getListData(currentPage, currentPageSize, panicStatus, panicCouponType, panicCouponName, storeName);
+            }
+
+            getListData = (currentPage: any, currentPageSize: any, panicStatus: any, panicCouponType: any, panicCouponName: any, storeName: any) => {
+                this.setState({
+                    loading: true,
+                });
+                request('/admin/activityRush', {
+                    method: 'GET',
+                    params: {
+                        status: panicStatus,
+                        coupon_type: panicCouponType,
+                        name: panicCouponName,
+                        store_name: storeName,
+                        page: currentPage,
+                        pre_page: currentPageSize
+                    }
+                }).then(res => {
+                    this.setState({ dataList: res.data, loading: false, total: res.meta.pagination.total })
+                })
             }
 
             onSearch = async (e: any) => {
@@ -99,10 +124,10 @@ export default Form.create()(
                                                         width: '100%',
                                                     }}
                                                 >
-                                                    <Option value="0">疯抢中</Option>
-                                                    <Option value="1">即将开始</Option>
-                                                    <Option value="2">即将售罄</Option>
-                                                    <Option value="3">已结束</Option>
+                                                    <Option value="1">待开始</Option>
+                                                    <Option value="2">抢购中</Option>
+                                                    <Option value="3">抢购结束</Option>
+                                                    <Option value="4">已取消</Option>
                                                 </Select>
                                             )}
                                         </FormItem>
@@ -116,7 +141,7 @@ export default Form.create()(
                                                         width: '100%',
                                                     }}
                                                 >
-                                                    <Option value="0">现金券</Option>
+                                                    <Option value="2">现金券</Option>
                                                     <Option value="1">优惠券</Option>
                                                 </Select>
                                             )}
@@ -152,7 +177,7 @@ export default Form.create()(
                                 </Row>
                             </Form>
 
-                            <Button type="primary" htmlType="submit" style={{marginBottom: '20px'}} onClick={() => router.push('/couponManagement/add-coupon')}>
+                            <Button type="primary" htmlType="submit" style={{ marginBottom: '20px' }} onClick={() => router.push('/couponManagement/add-coupon')}>
                                 新增
                             </Button>
 
