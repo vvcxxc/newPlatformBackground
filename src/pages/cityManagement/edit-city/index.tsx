@@ -101,7 +101,7 @@ export default class editCity extends Component {
                 is_default: isDefault
             }
         }).then(res => {
-            message.success(res.message)
+            message.success('操作成功')
         }).catch(err => {
         });
     }

@@ -85,7 +85,7 @@ export default class editBussiness extends Component {
                 name: name,
             }
         }).then(res => {
-            message.success(res.message);
+            message.success('操作成功');
 
         }).catch(err => {
         });
