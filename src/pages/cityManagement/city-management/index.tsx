@@ -21,6 +21,7 @@ import request from '@/utils/request'
 
 const FormItem = Form.Item;
 const { Option } = Select;
+const { confirm } = Modal;
 
 interface Props {
     form: any;
@@ -107,6 +108,31 @@ export default Form.create()(
                 this.getListData(currentPage, currentPageSize, provinceName, cityName, status,);
             }
 
+            handleStatus = (record: any) => {
+                // console.log(record)
+                let _this = this;
+                confirm({
+                    title: '操作',
+                    content: '确定要开通/关闭该城市吗?',
+                    okText: '确定',
+                    okType: 'danger',
+                    cancelText: '取消',
+                    onOk() {
+                        request(`/admin/city/status/${record.id}`, {
+                            method: 'PUT',
+                        }).then(res => {
+                            message.success('操作成功');
+                            const { provinceName, cityName, status, currentPage, currentPageSize } = _this.props.cityList;
+                            _this.getListData(currentPage, currentPageSize, provinceName, cityName, status,);
+                        })
+                    },
+                    onCancel() {
+                        console.log('Cancel');
+                    },
+                });
+            }
+
+
             render() {
                 const { getFieldDecorator } = this.props.form;
                 const { dataList, loading, total } = this.state;
@@ -145,7 +171,7 @@ export default Form.create()(
                         key: 'status',
                         width: 100,
                         render: (text: any, record: any) => (
-                            <span>{record.status == 1 ? "开通" : "关闭"}</span>
+                            <span >{record.status == 1 ? "开通" : "关闭"}</span>
                         )
                     },
                     {
@@ -155,9 +181,9 @@ export default Form.create()(
                         width: 100,
                         render: (text: any, record: any) => (
                             <div>
-                                <a>{record.status == 1 ? "关闭" : "开通"}</a>
+                                <a onClick={this.handleStatus.bind(this, record)}>{record.status == 1 ? "关闭" : "开通"}</a>
                                 <Divider type="vertical" />
-                                <a>编辑</a>
+                                <a onClick={() => router.push(`/cityManagement/edit-city?id=${record.id}`)}>编辑</a>
                             </div>
                         )
                     },
@@ -240,7 +266,7 @@ export default Form.create()(
                                 },
                             }}
                         />
-                    </div>
+                    </div >
                 )
             }
         }
