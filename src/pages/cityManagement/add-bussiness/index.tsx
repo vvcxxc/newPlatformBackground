@@ -51,7 +51,9 @@ export default class addBussiness extends Component {
         this.setState({ cityId, city })
     }
     changeName = (e: any) => {
+      if(e.target.value.length <= 20) {
         this.setState({ name: e.target.value })
+      }
     }
     sumbit = () => {
         const { cityId, name } = this.state;
@@ -80,7 +82,7 @@ export default class addBussiness extends Component {
                 sm: { span: 2 },
             }
         };
-        const { cityList } = this.state;
+        const { cityList, } = this.state;
         return (
             <div>
                 <Form {...formItemLayout}>
