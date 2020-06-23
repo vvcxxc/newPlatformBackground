@@ -29,7 +29,9 @@ export default class AddCate extends Component {
 
 
   changeName = (e: any) => {
-    this.setState({ name: e.target.value })
+    if(e.target.value.length <= 8){
+      this.setState({ name: e.target.value })
+    }
   }
 
   imgChange = (url: string) => {

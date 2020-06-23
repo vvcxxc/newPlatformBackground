@@ -55,7 +55,7 @@ export default {
   menu: {
     locale: true,
   },
-  title: 'Ant Design Pro',
+  title: '小熊敬礼管理后台',
   pwa: false,
   iconfontUrl: '',
 } as DefaultSettings;
