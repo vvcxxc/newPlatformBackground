@@ -147,6 +147,11 @@ export default {
                   component: './cityManagement/add-city'
                 },
                 {
+                  path: '/cityManagement/edit-city',
+                  name: 'edit-city',
+                  component: './cityManagement/edit-city'
+                },
+                {
                   path: '/cityManagement/bussiness-management',
                   name: 'city-management',
                   component: './cityManagement/bussiness-management'
@@ -155,6 +160,11 @@ export default {
                   path: '/cityManagement/add-bussiness',
                   name: 'add-bussiness',
                   component: './cityManagement/add-bussiness'
+                },
+                {
+                  path: '/cityManagement/edit-bussiness',
+                  name: 'edit-bussiness',
+                  component: './cityManagement/edit-bussiness'
                 },
               ]
             },

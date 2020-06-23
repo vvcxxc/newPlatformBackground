@@ -21,6 +21,7 @@ import request from '@/utils/request'
 
 const FormItem = Form.Item;
 const { Option } = Select;
+const { confirm } = Modal;
 
 interface Props {
     form: any;
@@ -118,6 +119,30 @@ export default Form.create()(
                 this.getListData(currentPage, currentPageSize, bussinessName, cityName);
             }
 
+            handleStatus = (record: any) => {
+                // console.log(record)
+                let _this = this;
+                confirm({
+                    title: '操作',
+                    content: '确定要开通/关闭该商圈吗?',
+                    okText: '确定',
+                    okType: 'danger',
+                    cancelText: '取消',
+                    onOk() {
+                        request(`/admin/business/status/${record.id}`, {
+                            method: 'PUT',
+                        }).then(res => {
+                            message.success('操作成功');
+                            const { bussinessName, cityName, currentPage, currentPageSize } = _this.props.bussinessList;
+                            _this.getListData(currentPage, currentPageSize, bussinessName, cityName);
+                        })
+                    },
+                    onCancel() {
+                        console.log('Cancel');
+                    },
+                });
+            }
+
             render() {
                 const { getFieldDecorator } = this.props.form;
                 const { dataList, loading, total, cityDatas } = this.state;
@@ -157,9 +182,9 @@ export default Form.create()(
                         width: 100,
                         render: (text: any, record: any) => (
                             <div>
-                                <a>{record.type == 1 ? "关闭" : "开通"}</a>
+                                <a onClick={this.handleStatus.bind(this, record)}>{record.type == 1 ? "关闭" : "开通"}</a>
                                 <Divider type="vertical" />
-                                <a>编辑</a>
+                                <a onClick={() => router.push(`/cityManagement/edit-bussiness?id=${record.id}`)}>编辑</a>
                             </div>
                         )
                     },
