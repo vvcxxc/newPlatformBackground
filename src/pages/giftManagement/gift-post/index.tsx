@@ -64,7 +64,7 @@ export default Form.create()(
                     this.setState({
                         dataList: res.data,
                         loading: false,
-                        total: res.pagination.total,
+                        total: res.meta.pagination.total,
                     })
                 })
             }

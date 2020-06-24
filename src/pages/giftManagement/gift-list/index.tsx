@@ -38,17 +38,17 @@ export default Form.create()(
                 this.setState({
                     loading: true
                 })
-                request('/api/v1/gift', {
+                request('/admin/gift', {
                     method: 'GET',
                     params: {
                         page: currentPage,
                         count: currentPageSize
                     }
-                }).then(res => {
+                }).then(res => {                  
                     this.setState({
                         dataList: res.data,
                         loading: false,
-                        total: res.pagination.total,
+                        total: res.meta.pagination.total,
                     })
                 })
             }
@@ -72,7 +72,7 @@ export default Form.create()(
             }
 
             handleOk = () => {
-                request('/api/v1/gift/updateGiftRepertoryNum', {
+                request('/admin/gift/' + this.state.gift_id + '/updateRepertory', {
                     method: "PUT",
                     data: {
                         gift_id: this.state.gift_id,

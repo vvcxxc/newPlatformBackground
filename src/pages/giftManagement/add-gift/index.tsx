@@ -27,8 +27,12 @@ export default class AddGift extends Component {
     value: ''
   }
 
+  componentDidMount() {
+    console.log(JSON.parse(localStorage.getItem('oss_data')))
+  }
+
   inputChange = (type: string) => (value: any) => {
-    console.log(value,type)
+    console.log(value, type)
     this.setState({ [type]: value })
   }
 
@@ -61,7 +65,7 @@ export default class AddGift extends Component {
   };
   //上传图片
   getData = (file: any) => {
-    let res = localStorage.getItem('oss_data')
+    let res = localStorage.getItem('oss_data');
     if (res) {
       let data = JSON.parse(res)
       let data1 = {
@@ -95,15 +99,24 @@ export default class AddGift extends Component {
 
   submit = () => {
     const { gift_name, gift_original_money, gift_money, gift_image, gift_detail, total_repertory_num, each_num, delivery_type, use_description, rule_description } = this.state
-    const data = { gift_name, gift_original_money, gift_money, gift_image, gift_detail: this.state.editorState.toHTML(), total_repertory_num, each_num, delivery_type, use_description, rule_description: JSON.stringify(rule_description) }
+    const data = {
+      gift_name,
+      gift_original_money,
+      gift_money,
+      worth_money: gift_original_money,
+      gift_image,
+      gift_detail: this.state.editorState.toHTML(),
+      total_repertory_num,
+      each_num,
+      delivery_type,
+      use_description,
+      rule_description: rule_description,
+      gift_type: 3
+    }
     addRealGift(data).then(res => {
-      console.log(res)
-      const {status_code, message} = res
-      if(status_code == 201){
+      if (res.data && res.data.id) {
         router.goBack()
-        notification.success({message})
-      }else {
-        notification.error({message})
+        notification.success({ message: '添加成功' })
       }
     })
   }
@@ -123,8 +136,8 @@ export default class AddGift extends Component {
       editorState: BraftEditor.createEditorState(null), // 创建一个空的editorState作为初始值
       outputHTML: '',
       value: ''
-    },()=>{
-      notification.success({message: '重置成功'})
+    }, () => {
+      notification.success({ message: '重置成功' })
     })
 
   }
@@ -212,10 +225,10 @@ export default class AddGift extends Component {
 
           <InputBox label='使用说明' value={use_description} onChange={this.inputChange('use_description')} />
 
-          <RuleBox label='参与规则' value={rule_description} onChange={this.inputChange('rule_description')}/>
+          <RuleBox label='参与规则' value={rule_description} onChange={this.inputChange('rule_description')} />
           <div className={styles.button_box}>
             <Button type='primary' onClick={this.submit}>提交</Button>
-            <Button style={{marginLeft: 50}} onClick={this.reset}>重置</Button>
+            <Button style={{ marginLeft: 50 }} onClick={this.reset}>重置</Button>
           </div>
         </div>
       </div>

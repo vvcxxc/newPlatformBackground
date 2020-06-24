@@ -57,6 +57,7 @@
     "qrcode": "^1.4.4",
     "qs": "^6.9.0",
     "react": "^16.8.6",
+    "react-amap": "^1.2.8",
     "react-copy-to-clipboard": "^5.0.1",
     "react-dnd": "^10.0.2",
     "react-dnd-html5-backend": "^10.0.2",
