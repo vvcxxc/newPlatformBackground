@@ -5,7 +5,7 @@ import request from '@/utils/request'
  * @param data
  */
 export const addRealGift = (data: any) => {
-  return request.post('/api/v1/gift/matterGift', { data })
+  return request.post('/admin/gift', { data })
 }
 
 /**
@@ -13,7 +13,7 @@ export const addRealGift = (data: any) => {
  * @param id 礼品id
  */
 export const getGiftDetails = (id: string | number) => {
-  return request.get('/api/v1/gift/' + id)
+  return request.get('/admin/gift/' + id, { params: { gift_id: id } })
 }
 
 /**
@@ -23,7 +23,7 @@ export const getGiftDetails = (id: string | number) => {
  * @data count 每页条数
  */
 export const getGiftUseList = (id: string | number, page: string | number, count: string | number) => {
-  return request.get('/api/v1/gift/' + id + '/bindingLog', { params: { page, count } })
+  return request.get('/admin/gift/' + id + '/bindingLog', { params: { page, count } })
 }
 
 /**
@@ -32,7 +32,7 @@ export const getGiftUseList = (id: string | number, page: string | number, count
  * @data add_repertory_num 添加库存数
  */
 export const changeGiftNum = (gift_id: string | number, add_repertory_num: string | number) => {
-  return request.put('/api/v1/gift/updateGiftRepertoryNum', { data: { gift_id, add_repertory_num } })
+  return request.put('/admin/gift/' + gift_id + '/updateRepertory', { data: { gift_id, add_repertory_num } })
 }
 
 

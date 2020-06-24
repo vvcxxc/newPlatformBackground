@@ -34,7 +34,7 @@ export default class GiftDetails extends Component {
   }
   componentDidMount() {
     getGiftDetails(this.props.location.query.id).then((res: any) => {
-      if (res.status_code == 200) {
+      if (res.data) {
         this.setState({
           ...this.state,
           ...res.data
@@ -78,8 +78,8 @@ export default class GiftDetails extends Component {
   getGiftUseData = (page: string | number, count: string | number) => {
     this.setState({ loading: true });
     getGiftUseList(this.props.location.query.id, page, count).then(res => {
-      if (res.status_code == 200) {
-        this.setState({ dataList: res.data, loading: false, total: res.pagination.total })
+      if (res.data) {
+        this.setState({ dataList: res.data, loading: false, total: res.meta.pagination.total })
       } else {
         notification.open({
           message: '请求失败',
