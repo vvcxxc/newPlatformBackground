@@ -188,6 +188,11 @@ export default {
                   component: './shopManagement/shop-management'
                 },
                 {
+                  path: '/shopManagement/add-shop',
+                  name: 'add-shop',
+                  component: './shopManagement/add-shop'
+                },
+                {
                   path: '/shopManagement/store-audit',
                   name: 'store-audit',
                   component: './shopManagement/store-audit'
