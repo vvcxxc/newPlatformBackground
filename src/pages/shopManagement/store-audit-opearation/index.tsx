@@ -34,8 +34,11 @@ export default class storeAuditOpearation extends Component {
         isDefault: null,
 
         storeMsgFail: false,
+        storeFailSeason: "",
         licenseMsgFail: false,
+        licenseFailSeason: "",
         IDMsgFail: false,
+        IDFailSeason: "",
 
         bussinessDatas: [],
 
@@ -57,7 +60,9 @@ export default class storeAuditOpearation extends Component {
         loadingIDHandheld: false,
 
         isSelcetDateLicense: 1,
-        isSelcetDateID: 1
+        isSelcetDateID: 1,
+
+        storeType: null
 
     }
 
@@ -67,6 +72,7 @@ export default class storeAuditOpearation extends Component {
             storeMsgFail: false,
             licenseMsgFail: false,
             IDMsgFail: false,
+            storeType: null
         })
     }
 
@@ -434,10 +440,37 @@ export default class storeAuditOpearation extends Component {
             isSelcetDateLicense,
             validity,
             isSelcetDateID,
-            IDValidity
+            IDValidity,
+            storeMsgFail,
+            licenseMsgFail,
+            IDMsgFail,
+            storeFailSeason,
+            licenseFailSeason,
+            IDFailSeason,
+            storeType,
+            storeName,
+            storeAddress,
+            detailAddress,
+            storeTel,
+            storeEmail,
+            bussinessType,
+            storeImg,
+            environmental_photo,
+            bussinessImg,
+            registerNum,
+            licenseName,
+            legalPersonName,
+            identity_card_positive_image,
+            identity_card_opposite_image,
+            identity_card_handheld_image,
+            IDName,
+            IDNum,
         } = this.state;
-        if (!isDefault) {
-            message.error('请选择审核结果'); return;
+        if (storeName == "" || storeAddress == "" || detailAddress == "" || storeTel == "" || storeEmail == "" || bussinessType == ""
+            || storeImg == "" || environmental_photo.length != 2 || bussinessImg == "" || registerNum == "" || licenseName == "" || legalPersonName == ""
+            || identity_card_positive_image == "" || identity_card_opposite_image == "" || identity_card_handheld_image == "" || IDName == "" || IDNum == ""
+        ) {
+            message.error('请填写完整资料'); return;
         }
         if (isSelcetDateLicense == 1 && validity == "") {
             message.error('请选择营业执照有效期'); return;
@@ -445,6 +478,42 @@ export default class storeAuditOpearation extends Component {
         if (isSelcetDateID == 1 && IDValidity == "") {
             message.error('请选择身份证有效期'); return;
         }
+        if (isDefault == null) {
+            message.error('请选择审核结果'); return;
+        }
+        if (isDefault == 0) {
+            if (!storeMsgFail && !licenseMsgFail && !IDMsgFail) {
+                message.error('请选择失败类型'); return;
+            }
+            if (storeMsgFail && storeFailSeason == "") {
+                message.error('请填写失败原因'); return;
+            }
+            if (licenseMsgFail && licenseFailSeason == "") {
+                message.error('请填写失败原因'); return;
+            }
+            if (IDMsgFail && IDFailSeason == "") {
+                message.error('请填写失败原因'); return;
+            }
+        }
+        if (isDefault == 1) {
+            if (storeType == null) {
+                message.error('请选择商圈'); return;
+            }
+        }
+
+        const id = this.props.location.query.id;
+        // request(`/admin/store/audit/${id}`, {
+        //     method: 'PUT',
+        //     data: {
+        //         store_name:storeName,
+        //         store_address:storeAddress,
+        //         store_address_info: detailAddress,
+        //         store_telephone: storeTel,
+
+        //     }
+        // }).then(res => {
+           
+        // })
     }
 
     render() {
@@ -487,7 +556,10 @@ export default class storeAuditOpearation extends Component {
             categoryDatas,
             oss_data,
             isSelcetDateLicense,
-            isSelcetDateID
+            isSelcetDateID,
+            storeFailSeason,
+            licenseFailSeason,
+            IDFailSeason
         } = this.state;
         const uploadButtonStoreImg = (
             <div className={styles.uploadDefault}>
@@ -794,10 +866,11 @@ export default class storeAuditOpearation extends Component {
                                         style={{
                                             width: '100%',
                                         }}
+                                        onChange={(v) => { this.setState({ storeType: v }) }}
                                     >
                                         {
                                             bussinessDatas.map(item => (
-                                                <Option value={item.name}>{item.name}</Option>
+                                                <Option value={item.id}>{item.name}</Option>
                                             ))
                                         }
                                     </Select>,
@@ -810,36 +883,36 @@ export default class storeAuditOpearation extends Component {
                                     }
                                 }>
                                     <div style={{ display: 'flex' }}>
-                                        <Checkbox style={{ flex: 1 }} onChange={(e) => this.setState({ storeMsgFail: e.target.checked })}>门店信息</Checkbox>
+                                        <Checkbox style={{ flex: 1 }} onChange={(e) => this.setState({ storeMsgFail: e.target.checked, storeFailSeason: "" })}>门店信息</Checkbox>
                                         {
                                             storeMsgFail ? (
                                                 <div style={{ flex: 2, display: 'flex', alignItems: 'center' }} >
                                                     <span style={{ flex: 1 }}>失败原因</span>
-                                                    <Input style={{ flex: 3 }} placeholder="Basic usage" />
+                                                    <Input style={{ flex: 3 }} placeholder="Basic usage" value={storeFailSeason} onChange={this.handleChangeInp.bind(this, 'storeFailSeason')} />
                                                 </div>
                                             ) : ""
                                         }
                                     </div>
                                     <br />
                                     <div style={{ display: 'flex' }}>
-                                        <Checkbox style={{ flex: 1 }} onChange={(e) => this.setState({ licenseMsgFail: e.target.checked })}>营业执照信息</Checkbox>
+                                        <Checkbox style={{ flex: 1 }} onChange={(e) => this.setState({ licenseMsgFail: e.target.checked, licenseFailSeason: "" })}>营业执照信息</Checkbox>
                                         {
                                             licenseMsgFail ? (
                                                 <div style={{ flex: 2, display: 'flex', alignItems: 'center' }} >
                                                     <span style={{ flex: 1 }}>失败原因</span>
-                                                    <Input style={{ flex: 3 }} placeholder="Basic usage" />
+                                                    <Input style={{ flex: 3 }} placeholder="Basic usage" value={licenseFailSeason} onChange={this.handleChangeInp.bind(this, 'licenseFailSeason')} />
                                                 </div>
                                             ) : ""
                                         }
                                     </div>
                                     <br />
                                     <div style={{ display: 'flex' }}>
-                                        <Checkbox style={{ flex: 1 }} onChange={(e) => this.setState({ IDMsgFail: e.target.checked })}>法人身份证信息</Checkbox>
+                                        <Checkbox style={{ flex: 1 }} onChange={(e) => this.setState({ IDMsgFail: e.target.checked, IDFailSeason: "" })}>法人身份证信息</Checkbox>
                                         {
                                             IDMsgFail ? (
                                                 <div style={{ flex: 2, display: 'flex', alignItems: 'center' }} >
                                                     <span style={{ flex: 1 }}>失败原因</span>
-                                                    <Input style={{ flex: 3 }} placeholder="Basic usage" />
+                                                    <Input style={{ flex: 3 }} placeholder="Basic usage" value={IDFailSeason} onChange={this.handleChangeInp.bind(this, 'IDFailSeason')} />
                                                 </div>
                                             ) : ""
                                         }
