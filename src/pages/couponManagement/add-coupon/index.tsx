@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import styles from './index.less';
 import { Card, Form, Input, Radio, Button, Table, Upload, Icon, message, Progress, Modal, DatePicker, Tabs } from 'antd';
-import RuleBox from '@/components/myComponents/ruleBox';
+import Rule from '@/components/myComponents/rule';
 import UploadBox from '@/components/myComponents/uploadBox'
 import request from '@/utils/request';
 import BraftEditor from 'braft-editor';
@@ -52,7 +52,9 @@ export default Form.create()(
       is_show_store: false, // 展示门店列表
       is_show_gift: false, // 展示礼品列表
       store_id: 0,
-      store_list: []
+      store_list: [],
+      gift_id: [],
+      gift_list: []
     }
 
     componentDidMount() {
@@ -238,6 +240,15 @@ export default Form.create()(
     }
 
     /**
+     * 礼品回调
+     */
+    giftChange = (id: any, list: any) => {
+      console.log(id, list)
+      this.setState({ gift_id: id, gift_list: list })
+      this.close()
+    }
+
+    /**
      * modal关闭
      */
     close = () => {
@@ -272,8 +283,8 @@ export default Form.create()(
         rush_share_content,
         is_show_store,
         is_show_gift,
-        store_id,
-        store_list
+        store_list,
+        gift_list,
       } = this.state;
       const formItemLayout = {
         labelCol: {
@@ -306,6 +317,75 @@ export default Form.create()(
             </Upload>
           )
         }
+      ]
+      const GiftList = [
+        {
+          title: '序号',
+          dataIndex: 'id',
+          key: 'id',
+          align: 'center'
+        },
+        {
+          title: '礼品名称',
+          dataIndex: 'gift_name',
+          key: 'gift_name',
+          align: 'center'
+        },
+        {
+          title: '礼品类型',
+          dataIndex: 'gift_type',
+          key: 'gift_type',
+          render: (text: any, record: any) => (
+            <div>
+              {
+                record.gift_type == 1 ? '现金券' : record.gift_type == 2 ? '商品券' : record.gift_type == 3 ? '实物礼品' : null
+              }
+            </div>
+          ),
+          align: 'center'
+        },
+        {
+          title: '商品原价',
+          dataIndex: 'worth_money',
+          key: 'worth_money',
+          align: 'center'
+        },
+        {
+          title: '面额',
+          dataIndex: 'offset_money',
+          key: 'offset_money',
+          align: 'center'
+        },
+        {
+          title: '使用门槛',
+          dataIndex: 'use_min_price',
+          key: 'use_min_price',
+          align: 'center'
+        },
+        {
+          title: '总库存(个)',
+          dataIndex: 'total_repertory_num',
+          key: 'total_repertory_num',
+          align: 'center'
+        },
+        {
+          title: '剩余数量(个)',
+          dataIndex: 'total_surplus_num',
+          key: 'total_surplus_num',
+          align: 'center'
+        },
+        {
+          title: '发放限制(人/个)',
+          dataIndex: 'each_num',
+          key: 'each_num',
+          align: 'center'
+        },
+        {
+          title: '有效期(天)',
+          dataIndex: 'validity_day',
+          key: 'validity_day',
+          align: 'center'
+        },
       ]
 
       const ownStoreColumns = [
@@ -360,19 +440,19 @@ export default Form.create()(
                 <Input placeholder="最多允许输入30个字（60字符）" value={name} onChange={this.handleChange.bind(this, 'name')} />
               </Form.Item>
 
-              <Form.Item label="所属门店" style={{width: '100%'}}>
+              <Form.Item label="所属门店" style={{ width: '100%' }}>
                 <Button type="primary" onClick={() => this.setState({ is_show_store: true })}>
                   添加
                 </Button>
 
               </Form.Item>
               {
-                store_list.length ? <div style={{width: '80%', marginLeft: 100}}>
-                   <Table
-                  columns={ownStoreColumns}
-                  dataSource={store_list}
-                  pagination={false}
-                />
+                store_list.length ? <div style={{ width: '80%', marginLeft: 100 }}>
+                  <Table
+                    columns={ownStoreColumns}
+                    dataSource={store_list}
+                    pagination={false}
+                  />
                 </div> : null
               }
 
@@ -430,7 +510,7 @@ export default Form.create()(
                   </Radio.Group>
                 </Form.Item>
                 <Form.Item label="使用须知">
-                  <RuleBox value={rush_description} onChange={this.inputChange('rush_description')} />
+                  <Rule />
                 </Form.Item>
               </div>
             </Form>
@@ -525,12 +605,20 @@ export default Form.create()(
               <div >添加礼品</div>
               <Button type='primary' onClick={() => this.setState({ is_show_gift: true })}>添加</Button>
             </div>
-
+            {
+              gift_list.length ? <div style={{ width: '80%', marginLeft: 100 }}>
+                <Table
+                  columns={GiftList}
+                  dataSource={gift_list}
+                  pagination={false}
+                />
+              </div> : null
+            }
           </Card>
 
           <StoreModal visible={is_show_store} onChange={this.storeChange} onClose={this.close} />
 
-          <GiftModal visible={is_show_gift} store={store_list[0] ? store_list[0] : null} />
+          <GiftModal visible={is_show_gift} store={store_list[0] ? store_list[0] : null} onClose={this.close} onChange={this.giftChange} />
 
 
         </div >

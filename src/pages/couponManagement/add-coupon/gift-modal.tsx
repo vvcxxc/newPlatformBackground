@@ -7,17 +7,26 @@ const { TabPane } = Tabs;
 interface Props {
   visible: boolean; // 是否展示
   store: any; // 店铺信息
+  onChange: (id: any, list: any) => any;
+  onClose: ()=>any;
 }
 
 const { Option } = Select;
-export default function GiftModal({ visible, store }: Props) {
-  const [tab, setTab] = useState(1)
-  const [gift_list, setList] = useState([])
+export default function GiftModal({ visible, store, onChange, onClose }: Props) {
+  const [tab, setTab] = useState(1);
+  const [gift_list, setList] = useState([]); // 礼品列表
+  const [gift_id, setGiftId] = useState([]); // 礼品id列表
+  const [gift_selected_list, setGiftSelectList] = useState([[],[],[]]);
+  const [select_key, setKey] = useState([[], [], []]); // 三个tab table的key
+  const [gift_type, setType] = useState(null); // 优惠券类型
+  const [name, setName] = useState(''); // 名字
+  const [params, setParams] = useState({}); // 请求参数
+  const [gift_ids, setIds] = useState([[], [], []]); // 三个table的id
+
 
   useEffect(() => {
     if (store) {
-      getGiftList({ store_id: store.store_id }).then(res => {
-        console.log(res)
+      getGiftList({ store_id: store.id, is_terrace: 0 }).then(res => {
         setList(res.data)
       })
     }
@@ -32,12 +41,69 @@ export default function GiftModal({ visible, store }: Props) {
      * 切换Tab
      */
   const handleChangeTabs = (key: number) => {
-    console.log(key);
     setTab(key)
+    setKey([[], [], []])
+    let params = {}
+    setName('')
+    setType(null)
+    setList([])
+    if (key == 1) { // 获取我的礼品
+      params = { store_id: store.id, is_terrace: 0 }
+    } else if (key == 2) { // 获取商圈礼品
+      params = { business_district_id: store.business_district_id, is_terrace: 0, store_id: store.id  }
+    } else if (key == 3) {
+      params = { is_terrace: 1 }
+    }
+    setParams(params)
+    getGiftList(params).then(res => {
+      setList(res.data)
+    })
   }
 
   const couponChange = (value: number) => {
+    setType(value)
+  }
 
+  const inputChange = (e: any) => {
+    setName(e.target.value)
+  }
+
+  const search = () => {
+    let data: any = { ...params }
+    if (name || gift_type) {
+      data.gift_name = name ? name : undefined;
+      data.gift_type = gift_type ? gift_type : undefined;
+      getGiftList(data).then(res => {
+        setList(res.data)
+      })
+    }
+
+  }
+
+  const reset = () => {
+    let params = {}
+    setName('')
+    setType(null)
+    setKey([[], [], []])
+    setGiftId([])
+    setGiftSelectList([])
+    if (tab == 1) { // 获取我的礼品
+      params = { store_id: store.id, is_terrace: 0 }
+    } else if (tab == 2) { // 获取商圈礼品
+      params = { business_district_id: store.business_district_id, is_terrace: 0, store_id: store.id }
+    } else if (tab == 3) {
+      params = { is_terrace: 1 }
+    }
+    setParams(params)
+    getGiftList(params).then(res => {
+      setList(res.data)
+    })
+  }
+
+  const submit = () => {
+    let id = [...gift_ids[0],...gift_ids[1], ...gift_ids[2]]
+    let list = [...gift_selected_list[0], ...gift_selected_list[1], ...gift_selected_list[2]]
+    onChange(id,list)
   }
 
   const GiftList = [
@@ -59,12 +125,12 @@ export default function GiftModal({ visible, store }: Props) {
       key: 'gift_type',
       render: (text: any, record: any) => (
         <div>
-            {
-              record.gift_type == 1 ? '现金券' : record.gift_type == 2 ? '商品券' : record.gift_type == 3 ? '实物礼品' : null
-            }
+          {
+            record.gift_type == 1 ? '现金券' : record.gift_type == 2 ? '商品券' : record.gift_type == 3 ? '实物礼品' : null
+          }
         </div>
-    ),
-    align: 'center'
+      ),
+      align: 'center'
     },
     {
       title: '商品原价',
@@ -112,14 +178,44 @@ export default function GiftModal({ visible, store }: Props) {
 
   const rowSelection = {
     onChange: (selectedRowKeys: any, selectedRows: any) => {
-      console.log()
+      if (selectedRows.length) {
+        let id: any = [];
+        let ids = [...gift_ids];
+        for (let i in selectedRows) {
+          id.push(selectedRows[i].id)
+        }
+        let key = [...select_key]
+        key[tab - 1] = selectedRowKeys
+        setKey(key)
+        ids[tab-1] = id;
+        setIds(ids)
+        let select_list = [...gift_selected_list]
+        select_list[tab-1] = selectedRows
+        setGiftSelectList(select_list)
+      } else {
+        let ids = [...gift_ids];
+        let key = [...select_key]
+        let select_list = [...gift_selected_list];
+        ids[tab-1] = [];
+        select_list[tab-1] = []
+        key[tab - 1] = []
+        setIds(ids)
+        setKey(key)
+        setGiftSelectList(select_list)
+      }
     },
-    getCheckboxProps: (record: any) => {
-      console.log(record,'rec')
-      return {
-        defaultChecked: record.id == 2 // 配置默认勾选的列
-    }
+    getCheckboxProps: async (record: any) => {
+      let key: any = select_key
+      for (let i in gift_list) {
+        if (gift_ids[tab - 1].includes(gift_list[i].id)) {
+          key[tab - 1].push(Number(i))
+        }
+      }
+      let key1 = new Set([...key[tab - 1]])
+      key[tab - 1] = [...key1]
+      await setKey(key)
     },
+    selectedRowKeys: tab == 1 ? select_key[0] : tab == 2 ? select_key[1] : tab == 3 ? select_key[2] : []
   };
 
   const list = (
@@ -134,29 +230,32 @@ export default function GiftModal({ visible, store }: Props) {
         >
           <Col md={8} sm={20}>
             <Form.Item label='礼品名称'>
-              <Input />
+              <Input value={name} onChange={inputChange} />
             </Form.Item>
           </Col>
           <Col md={8} sm={20}>
             <Form.Item label='礼品类型'>
-              <Select style={{ width: 200 }} onChange={couponChange}>
+              <Select style={{ width: 200 }} onChange={couponChange} value={gift_type}>
                 <Option value={1}>现金券</Option>
                 <Option value={2}>商品券</Option>
               </Select>
             </Form.Item>
           </Col>
           <Col md={8} sm={20}>
-            <Button type='primary' style={{ marginRight: 30 }}>搜索</Button>
-            <Button>重置</Button>
+            <Button type='primary' style={{ marginRight: 30 }} onClick={search}>搜索</Button>
+            <Button onClick={reset}>重置</Button>
           </Col>
 
         </Row>
       </Form>
-      <Table
-        columns={GiftList}
-        dataSource={gift_list}
-        rowSelection={rowSelection}
-      />
+      {
+        gift_list.length ? <Table
+          columns={GiftList}
+          dataSource={gift_list}
+          rowSelection={rowSelection}
+        /> : null
+      }
+
     </div>
   )
 
@@ -166,6 +265,8 @@ export default function GiftModal({ visible, store }: Props) {
         title="添加礼品"
         visible={visible}
         width={1000}
+        onOk={submit}
+        onCancel={()=> onClose()}
       >
         <Tabs defaultActiveKey="1" onChange={handleChangeTabs}>
           <TabPane tab="我的礼品" key="1">
