@@ -147,7 +147,10 @@ export default Form.create()(
                         title: '所属门店',
                         dataIndex: 'store_name',
                         key: 'store_name',
-                        width: 100
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>{record.store.name}</span>
+                        )
                     },
                     {
                         title: '市场价(元)',
