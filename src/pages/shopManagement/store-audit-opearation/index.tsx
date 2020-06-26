@@ -1,14 +1,94 @@
 import React, { Component } from "react";
 import styles from './index.less'
 import request from '@/utils/request';
-import { Card, Row, Col, Form, Input, DatePicker, Button, Select, Table, Modal, Radio, Checkbox, Upload, Icon, message } from 'antd'
+import { Card, Row, Col, Form, Input, DatePicker, Button, Select, Table, Modal, Radio, Checkbox, Upload, Icon, message, Cascader } from 'antd'
 import { connect } from "dva";
 import { router } from "umi";
 import moment from 'moment';
+import { Map, Marker, MouseTool } from 'react-amap';
+import { add } from "lodash";
 
 const { Option } = Select;
 
 export default class storeAuditOpearation extends Component {
+
+    geocoder: any;
+
+    events = {
+        created: (instance: any) => {
+            const _this = this
+            instance.plugin('AMap.Geolocation', function () {
+                let geolocation = new AMap.Geolocation({
+                    enableHighAccuracy: true,//是否使用高精度定位，默认:true
+                    timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+                    maximumAge: 0,           //定位结果缓存0毫秒，默认：0
+                    convert: true,           //自动偏移坐标，偏移后的坐标为高德坐标，默认：true
+                    showButton: true,        //显示定位按钮，默认：true
+                    buttonPosition: 'RB',    //定位按钮停靠位置，默认：'LB'，左下角
+                    buttonOffset: new AMap.Pixel(14, 130),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+                    showMarker: false,        //定位成功后在定位到的位置显示点标记，默认：true
+                    showCircle: false,        //定位成功后用圆圈表示定位精度范围，默认：true
+                    panToLocation: false,     //定位成功后将定位到的位置作为地图中心点，默认：true
+                    zoomToAccuracy: true      //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+                });
+                instance.addControl(geolocation);
+                geolocation.getCurrentPosition();
+                AMap.plugin('AMap.PlaceSearch')
+                AMap.plugin('AMap.Geocoder', () => {
+                    _this.geocoder = new AMap.Geocoder({
+                        city: "010"//城市，默认：“全国”
+                    })
+                })
+                geolocation.getCurrentPosition()
+                AMap.plugin('AMap.CitySearch', function () {
+                    var citySearch = new AMap.CitySearch()
+                    citySearch.getLocalCity(function (status, result) {
+                        if (status === 'complete' && result.info === 'OK') {
+                            // 查询成功，result即为当前所在城市信息
+                            let r1 = result.rectangle.split(';')[0];
+                            let r2 = result.rectangle.split(';')[1];
+                            let x = (Number(r1.split(',')[0]) + Number(r2.split(',')[0])) / 2;
+                            let y = (Number(r1.split(',')[1]) + Number(r2.split(',')[1])) / 2;
+                        }
+                    })
+                })
+
+            });
+        },
+        click: (e: any) => {
+            let location = {
+                latitude: e.lnglat.lat,
+                longitude: e.lnglat.lng,
+            }
+            this.setState({ location })
+            this.geocoder.getAddress([location.longitude, location.latitude], (status: string, result: any) => {
+                if (status === 'complete' && result.info === 'OK') {
+                    // result为对应的地理位置详细信息
+                    let address = result.regeocode.formattedAddress;
+                    this.setState({ map_address: address })
+                }
+            })
+        }
+    };
+
+    handleChangeSelcetMap = (e, v) => {
+        let address = "";
+        v.forEach(item => {
+            address += item.label;
+        })
+        console.log(address);
+        this.geocoder = new AMap.Geocoder({});
+        this.geocoder.getLocation(address, (status, result) => {
+            console.log(status, result)
+            if (status === 'complete') {
+                this.setState({
+                    location: { longitude: result.geocodes[0].location.lng, latitude: result.geocodes[0].location.lat },
+                    map_address: ""
+                })
+            }
+
+        })
+    }
 
     state = {
         storeName: "",
@@ -62,8 +142,30 @@ export default class storeAuditOpearation extends Component {
         isSelcetDateLicense: 1,
         isSelcetDateID: 1,
 
-        storeType: null
+        storeType: null,
 
+
+        city_list: [],
+        city_id: [],
+        map_address: '',
+        location: {
+            longitude: "",
+            latitude: ""
+        },
+        mapShow: false,
+
+    }
+
+
+    getCity = () => {
+        request.get('/json/regions').then(res => {
+            let list = JSON.stringify(res.data)
+            let a = list.replace(/name/g, "label")
+            let b = a.replace(/id/g, "value")
+            let c = b.replace(/city/g, "children")
+            let d = c.replace(/district/g, "children")
+            this.setState({ city_list: JSON.parse(d) })
+        })
     }
 
     handleChangeIsDefault = (e) => {
@@ -168,8 +270,11 @@ export default class storeAuditOpearation extends Component {
                 IDNum: res.data.identity_card,
                 IDValidity: res.data.identity_card_valid_until,
                 isSelcetDateID: res.data.is_identity_card_long_time == 1 ? 0 : 1,
+                location: { longitude: res.data.lng, latitude: res.data.lat }
             })
         })
+
+        this.getCity();
     }
 
 
@@ -465,6 +570,7 @@ export default class storeAuditOpearation extends Component {
             identity_card_handheld_image,
             IDName,
             IDNum,
+            location
         } = this.state;
         if (storeName == "" || storeAddress == "" || detailAddress == "" || storeTel == "" || storeEmail == "" || bussinessType == ""
             || storeImg == "" || environmental_photo.length != 2 || bussinessImg == "" || registerNum == "" || licenseName == "" || legalPersonName == ""
@@ -502,18 +608,20 @@ export default class storeAuditOpearation extends Component {
         }
 
         const id = this.props.location.query.id;
-        // request(`/admin/store/audit/${id}`, {
-        //     method: 'PUT',
-        //     data: {
-        //         store_name:storeName,
-        //         store_address:storeAddress,
-        //         store_address_info: detailAddress,
-        //         store_telephone: storeTel,
+        request(`/admin/store/audit/${id}`, {
+            method: 'PUT',
+            data: {
+                store_name: storeName,
+                store_address: storeAddress,
+                lng: location.longitude,
+                lat: location.latitude,
+                store_address_info: detailAddress,
+                store_telephone: storeTel,
 
-        //     }
-        // }).then(res => {
-           
-        // })
+            }
+        }).then(res => {
+
+        })
     }
 
     render() {
@@ -523,8 +631,8 @@ export default class storeAuditOpearation extends Component {
                 sm: { span: 2 },
             },
             wrapperCol: {
-                xs: { span: 4 },
-                sm: { span: 4 },
+                xs: { span: 8 },
+                sm: { span: 8 },
             },
         };
         const {
@@ -612,7 +720,10 @@ export default class storeAuditOpearation extends Component {
                             <Input value={storeName} onChange={this.handleChangeInp.bind(this, 'storeName')} />
                         </Form.Item>
                         <Form.Item label="门店地址">
-                            <Input value={storeAddress} onChange={this.handleChangeInp.bind(this, 'storeAddress')} />
+                            <div style={{ display: 'flex' }}>
+                                <Input value={storeAddress} onChange={this.handleChangeInp.bind(this, 'storeAddress')} />
+                                <Button onClick={() => { this.setState({ mapShow: true }) }}>打开地图</Button>
+                            </div>
                         </Form.Item>
                         <Form.Item label="详细地址">
                             <Input value={detailAddress} onChange={this.handleChangeInp.bind(this, 'detailAddress')} />
@@ -925,6 +1036,25 @@ export default class storeAuditOpearation extends Component {
                         </Form.Item>
                     </Form>
                 </Card>
+
+
+                <Modal
+                    className={styles.mapModal}
+                    title="Basic Modal"
+                    visible={this.state.mapShow}
+                    onOk={() => { this.setState({ mapShow: false, storeAddress: this.state.map_address }) }}
+                    onCancel={() => { this.setState({ mapShow: false }) }}
+                >
+                    <div className={styles.mapContent}>
+                        <Cascader className={styles.mapContentInputL} options={this.state.city_list} onChange={this.handleChangeSelcetMap} />
+                        <Input className={styles.mapContentInputR} type="text" value={this.state.map_address} onChange={(e: any) => { this.setState({ map_address: e.target.value }) }} />
+                        <div className={styles.mapArea}>
+                            <Map version={'1.4.15'} center={this.state.location} events={this.events} amapkey={'47d12b3485d7ded218b0d369e2ddd1ea'} zoom={12}  >
+                                <Marker position={this.state.location} />
+                            </Map>
+                        </div>
+                    </div>
+                </Modal>
             </div >
         )
     }

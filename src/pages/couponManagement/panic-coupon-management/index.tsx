@@ -80,8 +80,8 @@ export default Form.create()(
                         storeName,
                     },
                 });
-                // const { currentPage, currentPageSize } = this.props.panicCouponList;
-                console.log(this.props)
+                const { currentPage, currentPageSize } = this.props.panicCouponList;
+                this.getListData(currentPage, currentPageSize, panicStatus, panicCouponType, panicCouponName, storeName);
             }
 
             handleFormReset = async () => {
@@ -91,6 +91,22 @@ export default Form.create()(
                     type: 'panicCouponList/resetFussySearch',
                 });
             };
+
+            handleChange = async (pagination: any, filters: any, sorter: any) => {
+                await this.props.dispatch({
+                    type: 'panicCouponList/setPaginationCurrent',
+                    payload: {
+                        currentPage: pagination.current,
+                        currentPageSize: pagination.pageSize,
+                    },
+                });
+                const { currentPage, currentPageSize } = this.props.panicCouponList;
+                let panicStatus = this.props.form.getFieldValue('panicStatus');
+                let panicCouponType = this.props.form.getFieldValue('panicCouponType');
+                let panicCouponName = this.props.form.getFieldValue('panicCouponName');
+                let storeName = this.props.form.getFieldValue('storeName');
+                this.getListData(currentPage, currentPageSize, panicStatus, panicCouponType, panicCouponName, storeName);
+            }
 
             render() {
                 const { getFieldDecorator } = this.props.form;
@@ -102,6 +118,97 @@ export default Form.create()(
                         dataIndex: 'id',
                         key: 'id',
                         width: 100
+                    },
+                    {
+                        title: '卡券图片',
+                        dataIndex: 'coupon_cover',
+                        key: 'coupon_cover',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <img src={'http://tmwl.oss-cn-shenzhen.aliyuncs.com/' + record.coupon_cover} alt="" width="90px" />
+                        )
+                    },
+                    {
+                        title: '卡券名称',
+                        dataIndex: 'name',
+                        key: 'name',
+                        width: 100
+                    },
+                    {
+                        title: '卡券类型',
+                        dataIndex: 'coupon_type',
+                        key: 'coupon_type',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>{record.coupon_type == 1 ? "商品券" : record.coupon_type == 2 ? "现金券" : ""}</span>
+                        )
+                    },
+                    {
+                        title: '所属门店',
+                        dataIndex: 'store_name',
+                        key: 'store_name',
+                        width: 100
+                    },
+                    {
+                        title: '市场价(元)',
+                        dataIndex: 'market_money',
+                        key: 'market_money',
+                        width: 100
+                    },
+                    {
+                        title: '抢购价',
+                        dataIndex: 'rush_money',
+                        key: 'rush_money',
+                        width: 100
+                    },
+                    {
+                        title: '发放数量(张)',
+                        dataIndex: 'repertory_num',
+                        key: 'repertory_num',
+                        width: 100
+                    },
+                    {
+                        title: '参与库存(张)',
+                        dataIndex: 'surplus_num',
+                        key: 'surplus_num',
+                        width: 100
+                    },
+                    {
+                        title: '已抢购数量(张)',
+                        dataIndex: 'sales_num',
+                        key: 'sales_num',
+                        width: 100
+                    },
+                    {
+                        title: '抢购状态',
+                        dataIndex: 'status',
+                        key: 'status',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>{record.status == 1 ? "待开始" : record.status == 2 ? "抢购中" : record.status == 3 ? "抢购结束" : record.status == 4 ? "已取消" : ""}</span>
+                        )
+                    },
+                    {
+                        title: '抢购时间',
+                        dataIndex: 'time',
+                        key: 'time',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <span>{record.start_time + "~" + record.end_time}</span>
+                        )
+                    },
+                    {
+                        title: '操作',
+                        dataIndex: 'opearation',
+                        key: 'opearation',
+                        width: 100,
+                        render: (text: any, record: any) => (
+                            <div>
+                                <a >详情</a>
+                                <Divider type="vertical" />
+                                <a >订单明细</a>
+                            </div>
+                        )
                     },
                 ]
                 return (
@@ -186,7 +293,7 @@ export default Form.create()(
                                 columns={columns}
                                 dataSource={dataList}
                                 loading={loading}
-                                // onChange={this.handleChange}
+                                onChange={this.handleChange}
                                 pagination={{
                                     current: currentPage,
                                     defaultPageSize: currentPageSize,
