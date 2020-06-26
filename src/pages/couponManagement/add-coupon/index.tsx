@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
 import styles from './index.less';
-import { Card, Form, Input, Radio, Button, Table, Upload, Icon, message, Progress, Modal, DatePicker, Tabs } from 'antd';
+import { Card, Form, Input, Radio, Button, Table, Upload, Icon, message, Progress, Modal, DatePicker, Tabs, notification } from 'antd';
 import Rule from '@/components/myComponents/rule';
 import UploadBox from '@/components/myComponents/uploadBox'
-import request from '@/utils/request';
+import moment from 'moment'
 import BraftEditor from 'braft-editor';
 import { ContentUtils } from 'braft-utils';
-import { getRuleList } from './service'
+import { getRuleList, createCoupon } from './service'
+import { getOssDate } from '@/services/common'
 import StoreModal from './store-modal'
 import GiftModal from './gift-modal'
 import 'braft-editor/dist/index.css';
+import { router } from 'umi';
 
 interface Props {
   form: any;
@@ -26,10 +28,18 @@ export default Form.create()(
       coupon_type: 1, // 卡券类型
       name: "", // 卡券名称
       validity_day: "",  // 商品券有效期
-      pay_money: "", // 商品券购买价
+      pay_money: "0", // 商品券购买价
       market_money: "", // 商品券市场价
       rush_astrict_buy_num: 1,  // 商品券限购设置
       rule_description: [], // 商品券使用须知
+      offset_money: '',
+      use_min_price: '',
+      is_support_refund: 1,
+      brokerage_ratio: '',
+      image1: '',
+      image2: '',
+      image3: '',
+
 
       isUploadVideo: false,
       isPlayVideo: false,
@@ -41,6 +51,8 @@ export default Form.create()(
       articleFileList: [],
 
       rush_share_content: "", // 商品券分享内容
+      start_time: '',
+      end_time: '',
 
       is_rush: 1, // 是否参与抢购活动
       rush_money: "", // 抢购价
@@ -48,6 +60,7 @@ export default Form.create()(
       is_index_recommend: 1,       // 首页推广
       rush_description: '',
       rule_list: [], // 使用须知列表
+      rush_astrict_buy_num1: '',
 
       is_show_store: false, // 展示门店列表
       is_show_gift: false, // 展示礼品列表
@@ -58,26 +71,28 @@ export default Form.create()(
     }
 
     componentDidMount() {
-
+      getOssDate().then(res => {
+        this.setState({ oss_data_data: res.data })
+      })
       // 获取使用规则列表
       getRuleList().then(res => {
         this.setState({ rule_list: res.data })
       })
 
-
-
-
-
     }
 
+    // 随机数
+    randomString = (len: any) => {
+      len = len || 32;
+      const chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
+      const maxPos = chars.length;
+      let pwd = '';
+      for (let i = 0; i < len; i++) {
+        pwd += chars.charAt(Math.floor(Math.random() * maxPos));
+      }
+      return pwd;
+    };
 
-    /**
-     * 商品券使用须知
-     */
-    inputChange = (type: string) => (value: any) => {
-      console.log(value, type)
-      this.setState({ [type]: value })
-    }
 
     /**
      * 上传视频
@@ -155,8 +170,6 @@ export default Form.create()(
             isUploadVideo: false,
             isPlayVideo: false,
             videoUrlPath: ""
-          }, () => {
-            console.log(_this.state)
           })
         },
         onCancel() {
@@ -192,20 +205,13 @@ export default Form.create()(
 
 
 
-
-    /**
-     * 抢购时间
-     */
-    onChangeSelectTime = (value, dateString) => {
-      console.log('Selected Time: ', value);
-      console.log('Formatted Selected Time: ', dateString);
-    }
-
     /**
      * 选中抢购时间
      */
-    onOkSelectTime = (value) => {
-      console.log('onOk: ', value);
+    onOkSelectTime = (value: any,) => {
+      let start_time = moment(value[0]).format('YYYY-MM-DD HH:mm')
+      let end_time = moment(value[1]).format('YYYY-MM-DD HH:mm')
+      this.setState({ start_time, end_time })
     }
 
 
@@ -213,11 +219,46 @@ export default Form.create()(
      *
      */
     handleChange = (type: string, e: any) => {
-      this.setState({
-        [type]: e.target.value
-      }, () => {
-        console.log(this.state)
-      })
+      let regex = /^(([1-9]{1}\d*)|(0{1}))(\.\d{0,2})?$/; // 保留两位小数
+      let regex1 = /^[1-9]\d*$/; // 保留整数
+      let value = e.target.value
+      if (type == 'market_money' || type == 'offset_money' || type == 'use_min_price' || type == 'rush_money') {
+        if (regex.test(value) && value <= 1000000 || value == '') {
+          this.setState({ [type]: e.target.value })
+        }
+        return
+      }
+
+      if (type == 'brokerage_ratio') { // 分佣比例
+        if (regex1.test(value) && value <= 100 || value == '') {
+          this.setState({ [type]: e.target.value })
+        }
+        return
+      }
+
+      if (type == 'repertory_num') { // 抢购数量
+        if (regex1.test(value) || value == '') {
+          this.setState({ [type]: e.target.value })
+        }
+        return
+      }
+
+      if (type == 'rush_astrict_buy_num1') {
+        if (regex1.test(value) && value <= this.state.repertory_num || value == '') {
+          this.setState({ [type]: e.target.value })
+        }
+        return
+      }
+
+      if (type == 'name') { // 卡券名
+        if (value.length <= 30) {
+          this.setState({ [type]: e.target.value })
+        }
+        return
+      }
+
+      this.setState({ [type]: e.target.value })
+
     }
 
 
@@ -226,15 +267,14 @@ export default Form.create()(
     /**
      * 上传图片回调
      */
-    imgChange = (path: string) => {
-      console.log(path)
+    imgChange = (type: string, path: string) => {
+      this.setState({ [type]: path })
     }
 
     /**
      * 选择店铺的回调
      * */
     storeChange = (store_id: any, store_list: any) => {
-      console.log(store_id, store_list)
       this.setState({ store_id, store_list })
       this.close()
     }
@@ -243,7 +283,6 @@ export default Form.create()(
      * 礼品回调
      */
     giftChange = (id: any, list: any) => {
-      console.log(id, list)
       this.setState({ gift_id: id, gift_list: list })
       this.close()
     }
@@ -255,26 +294,109 @@ export default Form.create()(
       this.setState({ is_show_gift: false, is_show_store: false })
     }
 
+    /**
+     * 使用须知回调
+     */
+    ruleChange = (content: any) => {
+      let rush_description = []
+      for (let i in content) {
+        rush_description.push(content[i].content)
+      }
+      this.setState({ rush_description })
+    }
+
+    range = (start: number, end: number) => {
+      const result = [];
+      for (let i = start; i < end; i++) {
+        result.push(i);
+      }
+      return result;
+    }
+
+    /**
+     * 限制时间
+     */
+    disabledRangeTime = (_: any, type: string) => {
+      if (type == 'start') {
+        let time = moment().format()
+        let hour = moment(time).get('hour')
+        let minute = moment(time).get('minute')
+        let new_minute = minute + 5
+        if (new_minute > 59) {
+          new_minute = new_minute - 59
+          hour = hour + 1
+        }
+        return {
+          disabledHours: () => this.range(0, 24).splice(0,hour),
+          disabledMinutes: () => this.range(0, 60).splice(0,new_minute),
+        }
+
+      }
+      return {}
+    }
+
+    disabledDate = (current: any) => {
+      return current && current < moment(moment().endOf('day')).subtract(1, 'd');
+    }
+
+    submit = () => {
+      const { store_id, name, coupon_type, validity_day, pay_money, market_money, offset_money, use_min_price, is_support_refund, brokerage_ratio, is_rush, rush_money, start_time, end_time, rush_astrict_buy_num, repertory_num, is_index_recommend, rush_description, rush_share_content, gift_id, editorState, videoUrlPath, image1, image2, image3, rush_astrict_buy_num1 } = this.state
+      const rush_detail_connent = editorState.toHTML();
+      const master_video = videoUrlPath;
+      let coupon_image: any = [];
+      if (image1) coupon_image.push(image1)
+      if (image2) coupon_image.push(image2)
+      if (image3) coupon_image.push(image3)
+      let data = {
+        store_id,
+        name,
+        coupon_type,
+        validity_day,
+        pay_money: rush_money,
+        market_money: coupon_type === 1 ? market_money : undefined,
+        offset_money: coupon_type === 2 ? offset_money : undefined,
+        use_min_price: coupon_type === 3 ? use_min_price : undefined,
+        is_support_refund,
+        brokerage_ratio,
+        coupon_image,
+        master_video,
+        is_rush,
+        rush_money,
+        start_time,
+        end_time,
+        rush_astrict_buy_num: rush_astrict_buy_num ? rush_astrict_buy_num1 : rush_astrict_buy_num,
+        repertory_num,
+        is_index_recommend,
+        rush_description,
+        rush_share_content,
+        rush_detail_connent,
+        binding_gift_ids: gift_id
+      }
+      createCoupon(data).then(res => {
+        if (res.data && res.data.id) {
+          notification.success({ message: '添加成功' })
+          router.goBack()
+        }
+      })
+    }
+
+
+
 
     render() {
       const {
-        rule_list,
         coupon_type,
         name,
         validity_day,
-        pay_money,
         market_money,
         offset_money,
         use_min_price,
         is_support_refund,
         brokerage_ratio,
         rush_money,
-        start_time,
-        end_time,
         rush_astrict_buy_num,
         repertory_num,
         is_index_recommend,
-        rush_description,
         isUploadVideo,
         progressLoad,
         videoUrlPath,
@@ -285,6 +407,7 @@ export default Form.create()(
         is_show_gift,
         store_list,
         gift_list,
+        rush_astrict_buy_num1
       } = this.state;
       const formItemLayout = {
         labelCol: {
@@ -458,6 +581,7 @@ export default Form.create()(
 
               <Form.Item label="抽佣比例">
                 <Input value={brokerage_ratio} type='number' onChange={this.handleChange.bind(this, 'brokerage_ratio')} suffix="%" />
+                <div style={{ fontSize: 12, width: 500, color: '#D9001B' }}>注：抽佣比例决定商家需要支付给平台的服务费。服务费=交易额*抽佣比例</div>
               </Form.Item>
             </Form>
           </Card>
@@ -465,35 +589,55 @@ export default Form.create()(
           <Card title="限时抢购" bordered={false} style={{ width: "100%", marginTop: "20px" }}>
             <Form {...formItemLayout}
             >
-              <Form.Item label="市场价">
-                <Input value={market_money} onChange={this.handleChange.bind(this, 'market_money')} suffix="元" />
-              </Form.Item>
+              {
+                coupon_type === 1 ? <Form.Item label="市场价">
+                  <Input value={market_money} onChange={this.handleChange.bind(this, 'market_money')} suffix="元" />
+                </Form.Item> : <Form.Item label="面额">
+                    <Input value={offset_money} onChange={this.handleChange.bind(this, 'offset_money')} suffix="元" />
+                  </Form.Item>
+              }
+
               <Form.Item label="抢购价">
-                <Input value={rush_money} onChange={this.handleChange.bind(this, 'rush_money')} suffix="元" />
+                <Input value={rush_money} type='number' onChange={this.handleChange.bind(this, 'rush_money')} suffix="元" />
               </Form.Item>
               <div>
                 <Form.Item label="抢购时间">
                   <RangePicker
-                    showTime={{ format: 'HH:mm' }}
+                    showTime={{ format: 'HH:mm',  defaultValue: [moment().add(6, 'm'), moment('11:59:59', 'HH:mm:ss')] }}
+                    disabledTime={this.disabledRangeTime}
+                    disabledDate={this.disabledDate}
                     format="YYYY-MM-DD HH:mm"
                     placeholder={['开始时间', '结束时间']}
-                    onChange={this.onChangeSelectTime}
                     onOk={this.onOkSelectTime}
+
                   />
                 </Form.Item>
                 <Form.Item label="抢购数量">
-                  <Input value={repertory_num} onChange={this.handleChange.bind(this, 'repertory_num')} suffix="元" />
+                  <Input value={repertory_num} type='number' onChange={this.handleChange.bind(this, 'repertory_num')} suffix="张" />
                 </Form.Item>
+                {
+                  coupon_type === 2 ? (
+                    <Form.Item label="使用门槛">
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        消费满<Input style={{ width: 300 }} type='number' value={use_min_price} onChange={this.handleChange.bind(this, 'use_min_price')} suffix="元" />可用
+                    </div>
+                    </Form.Item>
+                  ) : null
+                }
                 <Form.Item label="限购设置">
                   <Radio.Group value={rush_astrict_buy_num} onChange={this.handleChange.bind(this, 'rush_astrict_buy_num')}>
                     <Radio value={0}>无限制</Radio>
                     <Radio value={1}>X张/人</Radio>
                   </Radio.Group>
+                  {
+                    rush_astrict_buy_num ? <Input value={rush_astrict_buy_num1} onChange={this.handleChange.bind(this, 'rush_astrict_buy_num1')} /> : null
+                  }
+
                 </Form.Item>
                 <Form.Item label="有效期">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span>购券日起</span>
-                    <Input value={validity_day} onChange={this.handleChange.bind(this, 'validity_day')} style={{ width: "250px" }} />
+                    <Input value={validity_day} type='number' onChange={this.handleChange.bind(this, 'validity_day')} style={{ width: "250px" }} />
                     <span>天可用</span>
                   </div>
                 </Form.Item>
@@ -510,7 +654,7 @@ export default Form.create()(
                   </Radio.Group>
                 </Form.Item>
                 <Form.Item label="使用须知">
-                  <Rule />
+                  <Rule onChange={this.ruleChange} />
                 </Form.Item>
               </div>
             </Form>
@@ -527,13 +671,13 @@ export default Form.create()(
               <Form.Item wrapperCol={{ offset: 2 }} >
                 <div style={{ display: 'flex' }}>
                   <div style={{ width: '150px', height: '150px', marginRight: '50px' }}>
-                    <UploadBox onChange={this.imgChange} />
+                    <UploadBox onChange={this.imgChange.bind(this, 'image1')} />
                   </div>
                   <div style={{ width: '150px', height: '150px', marginRight: '50px' }}>
-                    <UploadBox onChange={this.imgChange} />
+                    <UploadBox onChange={this.imgChange.bind(this, 'image2')} />
                   </div>
                   <div style={{ width: '150px', height: '150px', marginRight: '50px' }}>
-                    <UploadBox onChange={this.imgChange} />
+                    <UploadBox onChange={this.imgChange.bind(this, 'image3')} />
                   </div>
                 </div>
 
@@ -614,6 +758,9 @@ export default Form.create()(
                 />
               </div> : null
             }
+          </Card>
+          <Card bordered={false} style={{ width: "100%", marginTop: "20px" }}>
+            <Button onClick={this.submit} type='primary'>确定</Button>
           </Card>
 
           <StoreModal visible={is_show_store} onChange={this.storeChange} onClose={this.close} />
