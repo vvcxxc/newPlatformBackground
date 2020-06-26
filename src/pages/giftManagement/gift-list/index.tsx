@@ -38,7 +38,7 @@ export default Form.create()(
                 this.setState({
                     loading: true
                 })
-                request('/api/v1/gift', {
+                request('/admin/gift', {
                     method: 'GET',
                     params: {
                         page: currentPage,
@@ -48,7 +48,7 @@ export default Form.create()(
                     this.setState({
                         dataList: res.data,
                         loading: false,
-                        total: res.pagination.total,
+                        total: res.meta.pagination.total,
                     })
                 })
             }
@@ -72,7 +72,7 @@ export default Form.create()(
             }
 
             handleOk = () => {
-                request('/api/v1/gift/updateGiftRepertoryNum', {
+                request('/admin/gift/' + this.state.gift_id + '/updateRepertory', {
                     method: "PUT",
                     data: {
                         gift_id: this.state.gift_id,
@@ -167,7 +167,9 @@ export default Form.create()(
                             <span>
                                 <a onClick={() => router.push({ pathname: '/giftManagement/gift-details', query: { id: record.id } })}>查看详情</a>
                                 <Divider type="vertical" />
-                                <a onClick={() => this.setState({ visible: true, gift_id: record.id })}>增加库存</a>
+                                {
+                                    record.gift_type == 3 ? <a onClick={() => this.setState({ visible: true, gift_id: record.id })}>增加库存</a> : null
+                                }
                                 {/* <Divider type="vertical" /> */}
                                 {/* <a>编辑</a> */}
                             </span>

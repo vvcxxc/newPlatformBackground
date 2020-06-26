@@ -32,7 +32,8 @@ const codeMessage = {
  */
 const errorHandler = async(error: { response: Response }): Response => {
   const { response } = error;
-  let aa = Promise.resolve(response.json())
+  if(response){
+    let aa = Promise.resolve(response.json())
   let a = await aa
   if (response && response.status) {
     const errorText = codeMessage[response.status] || response.statusText;
@@ -52,6 +53,10 @@ const errorHandler = async(error: { response: Response }): Response => {
     });
   }
   return a;
+  }else {
+    return response
+  }
+
 };
 
 /**
