@@ -20,14 +20,17 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
   const [select_key, setKey] = useState([[], [], []]); // 三个tab table的key
   const [gift_type, setType] = useState(null); // 优惠券类型
   const [name, setName] = useState(''); // 名字
-  const [params, setParams] = useState({}); // 请求参数
+  const [params, setParams] = useState({is_terrace: 0}); // 请求参数
   const [gift_ids, setIds] = useState([[], [], []]); // 三个table的id
 
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState()
 
   useEffect(() => {
     if (store) {
-      getGiftList({ store_id: store.id, is_terrace: 0 }).then(res => {
+      getGiftList({ store_id: store.id, is_terrace: 0, per_page: 2 }).then(res => {
         setList(res.data)
+        setTotal(res.meta.pagination.total)
       })
     }
 
@@ -47,6 +50,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
     setName('')
     setType(null)
     setList([])
+    setPage(1)
     if (key == 1) { // 获取我的礼品
       params = { store_id: store.id, is_terrace: 0 }
     } else if (key == 2) { // 获取商圈礼品
@@ -57,6 +61,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
     setParams(params)
     getGiftList(params).then(res => {
       setList(res.data)
+      setTotal(res.meta.pagination.total)
     })
   }
 
@@ -75,6 +80,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
       data.gift_type = gift_type ? gift_type : undefined;
       getGiftList(data).then(res => {
         setList(res.data)
+        setTotal(res.meta.pagination.total)
       })
     }
 
@@ -97,6 +103,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
     setParams(params)
     getGiftList(params).then(res => {
       setList(res.data)
+      setTotal(res.meta.pagination.total)
     })
   }
 
@@ -105,6 +112,32 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
     let list = [...gift_selected_list[0], ...gift_selected_list[1], ...gift_selected_list[2]]
     onChange(id,list)
   }
+
+
+  const pageChange = (pagination: any) => {
+    let {current } = pagination
+    setPage(current)
+    let param = {...params}
+    console.log(params)
+    param.page = current
+    param.per_page = 2
+    getGiftList(param).then(res => {
+      setList(res.data)
+      let list = res.data
+      let ids = gift_ids[tab-1]
+      let key:any = []
+      for( let i in list){
+        for( let a in ids ){
+          if(list[i].id = ids[a]){
+            key.push(i)
+          }
+        }
+      }
+      //  设置keys
+      setTotal(res.meta.pagination.total)
+    })
+  }
+
 
   const GiftList = [
     {
@@ -178,6 +211,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
 
   const rowSelection = {
     onChange: (selectedRowKeys: any, selectedRows: any) => {
+      console.log(selectedRowKeys,'keys')
       if (selectedRows.length) {
         let id: any = [];
         let ids = [...gift_ids];
@@ -204,8 +238,30 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
         setGiftSelectList(select_list)
       }
     },
+    // onSelect: (record: any, selected: boolean,) => {
+    //   if(selected){
+    //     let ids: any = JSON.parse(JSON.stringify([...gift_ids]))
+    //     let key: any = JSON.parse(JSON.stringify([...select_key]))
+    //     for(let i in gift_list){
+    //       if(gift_list[i].id == record.id){
+    //         console.log(333,key[tab-1])
+    //         key[tab-1].push(Number(i))
+    //         console.log(444,key[tab-1])
+
+    //       }
+    //     }
+    //     ids[tab-1].push(record.id)
+    //     setIds(ids)
+    //     setKey(key)
+
+    //     console.log(key,ids)
+    //   }else {
+
+    //   }
+    // },
     getCheckboxProps: async (record: any) => {
       let key: any = select_key
+      // console.log(gift_ids,record)
       for (let i in gift_list) {
         if (gift_ids[tab - 1].includes(gift_list[i].id)) {
           key[tab - 1].push(Number(i))
@@ -249,11 +305,22 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
         </Row>
       </Form>
       {
-        gift_list.length ? <Table
+        gift_list.length ? (
+        <Table
           columns={GiftList}
           dataSource={gift_list}
           rowSelection={rowSelection}
-        /> : null
+          onChange={pageChange}
+          pagination={{
+            current: page,
+            pageSize: 2,
+            total,
+            showTotal: () => {
+              return `共${total}条`;
+            },
+          }}
+        />
+        ) : null
       }
 
     </div>
