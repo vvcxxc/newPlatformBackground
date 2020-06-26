@@ -44,7 +44,7 @@ export default Form.create()(
                         page: currentPage,
                         count: currentPageSize
                     }
-                }).then(res => {                  
+                }).then(res => {
                     this.setState({
                         dataList: res.data,
                         loading: false,
@@ -167,7 +167,9 @@ export default Form.create()(
                             <span>
                                 <a onClick={() => router.push({ pathname: '/giftManagement/gift-details', query: { id: record.id } })}>查看详情</a>
                                 <Divider type="vertical" />
-                                <a onClick={() => this.setState({ visible: true, gift_id: record.id })}>增加库存</a>
+                                {
+                                    record.gift_type == 3 ? <a onClick={() => this.setState({ visible: true, gift_id: record.id })}>增加库存</a> : null
+                                }
                                 {/* <Divider type="vertical" /> */}
                                 {/* <a>编辑</a> */}
                             </span>
