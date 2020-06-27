@@ -29,7 +29,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
 
   useEffect(() => {
     if (store) {
-      getGiftList({ store_id: store.id, is_terrace: 0, per_page: 2 }).then(res => {
+      getGiftList({ store_id: store.id, is_terrace: 0, }).then(res => {
         setList(res.data)
         setTotal(res.meta.pagination.total)
       })
@@ -126,8 +126,6 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
     } else if (tab == 3) {
       params = { is_terrace: 1 }
     }
-    params.page = current
-    params.per_page = 2
     setKey([[],[],[]])
     setList([])
     getGiftList(params).then(res => {
@@ -331,7 +329,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
           onChange={pageChange}
           pagination={{
             current: page,
-            pageSize: 2,
+            pageSize: 15,
             total,
             showTotal: () => {
               return `共${total}条`;
