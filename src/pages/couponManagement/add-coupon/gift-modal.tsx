@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Modal, Table, Form, Input, Select, Row, Col, Button, Tabs } from 'antd'
 import styles from './index.less'
 import { getGiftList } from './service'
+import { stubArray } from 'lodash';
 const { TabPane } = Tabs;
 
 interface Props {
@@ -262,7 +263,6 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
       }
     },
     onSelectAll: (selected: any, record: boolean,) => {
-      console.log(record,selected,222)
       if(!selected){
         let ids: any = JSON.parse(JSON.stringify([...gift_ids]))
         let key: any = JSON.parse(JSON.stringify([...select_key]));
@@ -270,15 +270,8 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
         key[tab - 1] = []
         for(let i in gift_list){
           ids[tab-1] = ids[tab-1].filter((res: any) => res != gift_list[i].id)
-          // select_list = select_list.filter((res: any) => res.id != gift_list[i].id)
-          for(let a in select_list){
-            if(select_list[a].id == gift_list[i].id){
-              select_list = select_list.filter((res: any) => res.id != gift_list[i].id)
-            }
-          }
-
+          select_list[tab-1] = select_list[tab-1].filter((res: any) => res.id != gift_list[i].id)
         }
-        console.log(select_list)
         setGiftSelectList(select_list)
         setKey(key)
         setIds(ids)
