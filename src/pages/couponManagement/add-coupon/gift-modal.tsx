@@ -9,7 +9,7 @@ interface Props {
   visible: boolean; // 是否展示
   store: any; // 店铺信息
   onChange: (id: any, list: any) => any;
-  onClose: ()=>any;
+  onClose: () => any;
 }
 
 const { Option } = Select;
@@ -17,11 +17,11 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
   const [tab, setTab] = useState(1);
   const [gift_list, setList] = useState([]); // 礼品列表
   const [gift_id, setGiftId] = useState([]); // 礼品id列表
-  const [gift_selected_list, setGiftSelectList] = useState([[],[],[]]);
+  const [gift_selected_list, setGiftSelectList] = useState([[], [], []]);
   const [select_key, setKey] = useState([[], [], []]); // 三个tab table的key
   const [gift_type, setType] = useState(null); // 优惠券类型
   const [name, setName] = useState(''); // 名字
-  const [params, setParams] = useState({is_terrace: 0}); // 请求参数
+  const [params, setParams] = useState({ is_terrace: 0 }); // 请求参数
   const [gift_ids, setIds] = useState([[], [], []]); // 三个table的id
 
   const [page, setPage] = useState(1)
@@ -55,7 +55,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
     if (key == 1) { // 获取我的礼品
       params = { store_id: store.id, is_terrace: 0 }
     } else if (key == 2) { // 获取商圈礼品
-      params = { business_district_id: store.business_district_id, is_terrace: 0, store_id: store.id  }
+      params = { business_district_id: store.business_district_id, is_terrace: 0, store_id: store.id }
     } else if (key == 3) {
       params = { is_terrace: 1 }
     }
@@ -109,40 +109,40 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
   }
 
   const submit = () => {
-    let id = [...gift_ids[0],...gift_ids[1], ...gift_ids[2]]
+    let id = [...gift_ids[0], ...gift_ids[1], ...gift_ids[2]]
     let list = [...gift_selected_list[0], ...gift_selected_list[1], ...gift_selected_list[2]]
-    onChange(id,list)
+    onChange(id, list)
   }
 
 
   const pageChange = (pagination: any) => {
-    let {current } = pagination
+    let { current } = pagination
     setPage(current)
-    let params = {...params}
+    let params = { ...params }
     if (tab == 1) { // 获取我的礼品
       params = { store_id: store.id, is_terrace: 0 }
     } else if (tab == 2) { // 获取商圈礼品
-      params = { business_district_id: store.business_district_id, is_terrace: 0, store_id: store.id  }
+      params = { business_district_id: store.business_district_id, is_terrace: 0, store_id: store.id }
     } else if (tab == 3) {
       params = { is_terrace: 1 }
     }
-    setKey([[],[],[]])
+    setKey([[], [], []])
     setList([])
     getGiftList(params).then(res => {
 
       let list_gift = res.data
-      let ids = gift_ids[tab-1]
-      let arr:any = [];
+      let ids = gift_ids[tab - 1]
+      let arr: any = [];
       let key = [...select_key]
-      for( let i in list_gift){
-        for( let a in ids ){
+      for (let i in list_gift) {
+        for (let a in ids) {
           console.log(list_gift[i])
-          if(list_gift[i].id == ids[a]){
+          if (list_gift[i].id == ids[a]) {
             arr.push(i)
           }
         }
       }
-      key[tab-1] = arr
+      key[tab - 1] = arr
       console.log(key)
       setKey(key)
       //  设置keys
@@ -150,6 +150,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
       setList(res.data)
     })
   }
+
 
 
   const GiftList = [
@@ -224,7 +225,6 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
 
   const rowSelection = {
     onChange: (selectedRowKeys: any, selectedRows: any) => {
-      console.log(selectedRowKeys,'keys')
       if (selectedRows.length) {
 
         let id: any = [];
@@ -232,43 +232,60 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
         let ids = JSON.parse(JSON.stringify(gift_ids));
         let select_list = JSON.parse(JSON.stringify(gift_selected_list));
         for (let i in selectedRows) {
+          if (select_list[tab - 1].length) {
+            for (let a in select_list[tab - 1]) {
+              if (select_list[tab - 1][a].id != selectedRows[i].id) {
+                select_list[tab - 1].push(selectedRows[i])
+              }
+            }
+          } else {
+            select_list[tab - 1].push(selectedRows[i])
+          }
+
           id.push(selectedRows[i].id)
-          select_list[tab - 1].push(selectedRows[i])
         }
+        let obj = {};
+        let peon = select_list[tab - 1].reduce((cur, next) => {
+          obj[next.id] ? "" : obj[next.id] = true && cur.push(next);
+          return cur;
+        }, [])
+        select_list[tab - 1] = peon
+        id = [...new Set([...id])]
         setGiftSelectList(select_list)
-        key[tab - 1] = selectedRowKeys
+        key[tab - 1] = [...new Set(selectedRowKeys)]
         setKey(key)
-        ids[tab-1] = [...ids[tab-1],...id];
+        ids[tab - 1] = [...ids[tab - 1], ...id];
+        ids[tab - 1] = [...new Set(ids[tab - 1])]
         setIds(ids)
       }
     },
     onSelect: (record: any, selected: boolean,) => {
-      if(!selected){
+      if (!selected) {
         let ids: any = JSON.parse(JSON.stringify([...gift_ids]))
         let key: any = JSON.parse(JSON.stringify([...select_key]))
         let select_list = JSON.parse(JSON.stringify(gift_selected_list));
-        ids[tab-1] = ids[tab-1].filter((res: any) => res != record.id)
-        for(let i in gift_list){
-          if(gift_list[i].id == record.id){
-             key[tab-1] = key[tab-1].filter((res: any) => res != i)
+        ids[tab - 1] = ids[tab - 1].filter((res: any) => res != record.id)
+        for (let i in gift_list) {
+          if (gift_list[i].id == record.id) {
+            key[tab - 1] = key[tab - 1].filter((res: any) => res != i)
           }
         }
-        select_list = select_list.filter((res: any) => res.id != record.id)
+        key[tab - 1] = [...new Set(key[tab - 1])]
+        select_list[tab - 1] = select_list[tab - 1].filter((res: any) => res.id != record.id)
         setKey(key)
         setIds(ids)
         setGiftSelectList(select_list)
-        console.log(ids,key,record)
       }
     },
     onSelectAll: (selected: any, record: boolean,) => {
-      if(!selected){
+      if (!selected) {
         let ids: any = JSON.parse(JSON.stringify([...gift_ids]))
         let key: any = JSON.parse(JSON.stringify([...select_key]));
         let select_list = JSON.parse(JSON.stringify(gift_selected_list));
         key[tab - 1] = []
-        for(let i in gift_list){
-          ids[tab-1] = ids[tab-1].filter((res: any) => res != gift_list[i].id)
-          select_list[tab-1] = select_list[tab-1].filter((res: any) => res.id != gift_list[i].id)
+        for (let i in gift_list) {
+          ids[tab - 1] = ids[tab - 1].filter((res: any) => res != gift_list[i].id)
+          select_list[tab - 1] = select_list[tab - 1].filter((res: any) => res.id != gift_list[i].id)
         }
         setGiftSelectList(select_list)
         setKey(key)
@@ -322,20 +339,20 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
       </Form>
       {
         gift_list.length ? (
-        <Table
-          columns={GiftList}
-          dataSource={gift_list}
-          rowSelection={rowSelection}
-          onChange={pageChange}
-          pagination={{
-            current: page,
-            pageSize: 15,
-            total,
-            showTotal: () => {
-              return `共${total}条`;
-            },
-          }}
-        />
+          <Table
+            columns={GiftList}
+            dataSource={gift_list}
+            rowSelection={rowSelection}
+            onChange={pageChange}
+            pagination={{
+              current: page,
+              pageSize: 15,
+              total,
+              showTotal: () => {
+                return `共${total}条`;
+              },
+            }}
+          />
         ) : null
       }
 
@@ -349,7 +366,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
         visible={visible}
         width={1000}
         onOk={submit}
-        onCancel={()=> onClose()}
+        onCancel={() => onClose()}
       >
         <Tabs defaultActiveKey="1" onChange={handleChangeTabs}>
           <TabPane tab="我的礼品" key="1">

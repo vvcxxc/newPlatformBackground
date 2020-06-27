@@ -480,33 +480,9 @@ export default Form.create()(
           align: 'center'
         },
         {
-          title: '使用门槛',
-          dataIndex: 'use_min_price',
-          key: 'use_min_price',
-          align: 'center'
-        },
-        {
-          title: '总库存(个)',
-          dataIndex: 'total_repertory_num',
-          key: 'total_repertory_num',
-          align: 'center'
-        },
-        {
           title: '剩余数量(个)',
           dataIndex: 'total_surplus_num',
           key: 'total_surplus_num',
-          align: 'center'
-        },
-        {
-          title: '发放限制(人/个)',
-          dataIndex: 'each_num',
-          key: 'each_num',
-          align: 'center'
-        },
-        {
-          title: '有效期(天)',
-          dataIndex: 'validity_day',
-          key: 'validity_day',
           align: 'center'
         },
       ]
