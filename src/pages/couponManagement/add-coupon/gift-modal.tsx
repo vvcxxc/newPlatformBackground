@@ -10,10 +10,11 @@ interface Props {
   store: any; // 店铺信息
   onChange: (id: any, list: any) => any;
   onClose: () => any;
+  id: any;
 }
 
 const { Option } = Select;
-export default function GiftModal({ visible, store, onChange, onClose }: Props) {
+export default function GiftModal({ visible, store, onChange, onClose, id }: Props) {
   const [tab, setTab] = useState(1);
   const [gift_list, setList] = useState([]); // 礼品列表
   const [gift_id, setGiftId] = useState([]); // 礼品id列表
@@ -23,6 +24,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
   const [name, setName] = useState(''); // 名字
   const [params, setParams] = useState({ is_terrace: 0 }); // 请求参数
   const [gift_ids, setIds] = useState([[], [], []]); // 三个table的id
+
 
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState()
@@ -37,7 +39,51 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
 
   }, [store])
 
-
+  useEffect(() => {
+    console.log(id,'effect')
+    if(id.length){
+      let ids = JSON.parse(JSON.stringify(gift_ids))
+      let key = JSON.parse(JSON.stringify(select_key))
+      let selected_list = JSON.parse(JSON.stringify(gift_selected_list))
+      for(let i in ids){
+        let arr = ids[i]
+        let new_id: any = []
+        for(let a in arr){
+          for(let b in id){
+            if(id[b] == arr[a]){
+              new_id.push(id[b])
+            }
+          }
+        }
+        ids[i] = new_id
+      }
+      for(let i in selected_list){
+        let arr = selected_list[i]
+        let new_list: any = []
+        for (let a in arr){
+          for (let b in id){
+            if(id[b] == arr[a].id){
+              new_list.push(arr[a])
+            }
+          }
+        }
+        selected_list[i] = new_list
+      }
+      console.log(selected_list,'selected_list')
+      setGiftSelectList(selected_list)
+      setIds(ids)
+      let key_tab = []
+      for(let i in id){
+        for(let a in gift_list){
+          if(id[i] == gift_list[a].id){
+            key_tab.push(a)
+          }
+        }
+      }
+      key[tab-1] = key_tab
+      setKey(key)
+    }
+  },[id])
 
 
 
@@ -338,12 +384,13 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
         </Row>
       </Form>
       {
-        gift_list.length ? (
+        gift_list.length && visible ? (
           <Table
             columns={GiftList}
             dataSource={gift_list}
             rowSelection={rowSelection}
             onChange={pageChange}
+            rowKey={''}
             pagination={{
               current: page,
               pageSize: 15,

@@ -380,6 +380,16 @@ export default Form.create()(
       })
     }
 
+    /**
+     * 删除礼品
+     */
+    deleteGift = (item: any) => {
+      let gift_id = JSON.parse(JSON.stringify(this.state.gift_id))
+      let gift_list = JSON.parse(JSON.stringify(this.state.gift_list))
+      gift_id = gift_id.filter((res: any) => res != item.id)
+      gift_list = gift_list.filter((res: any) => res.id != item.id)
+      this.setState({gift_id, gift_list})
+    }
 
 
 
@@ -485,6 +495,14 @@ export default Form.create()(
           key: 'total_surplus_num',
           align: 'center'
         },
+        {
+          title: '操作',
+          dataIndex: 'index',
+          render: (text: any, record: any, index: number) => {
+            return <Icon type="delete" onClick={this.deleteGift.bind(this, record)} />;
+          },
+          align: 'center'
+        }
       ]
 
       const ownStoreColumns = [
@@ -741,7 +759,7 @@ export default Form.create()(
 
           <StoreModal visible={is_show_store} onChange={this.storeChange} onClose={this.close} />
 
-          <GiftModal visible={is_show_gift} store={store_list[0] ? store_list[0] : null} onClose={this.close} onChange={this.giftChange} />
+          <GiftModal visible={is_show_gift} id={this.state.gift_id} store={store_list[0] ? store_list[0] : null} onClose={this.close} onChange={this.giftChange} />
 
 
         </div >
