@@ -117,24 +117,38 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
   const pageChange = (pagination: any) => {
     let {current } = pagination
     setPage(current)
-    let param = {...params}
-    console.log(params)
-    param.page = current
-    param.per_page = 2
-    getGiftList(param).then(res => {
-      setList(res.data)
-      let list = res.data
+    let params = {...params}
+    if (tab == 1) { // 获取我的礼品
+      params = { store_id: store.id, is_terrace: 0 }
+    } else if (tab == 2) { // 获取商圈礼品
+      params = { business_district_id: store.business_district_id, is_terrace: 0, store_id: store.id  }
+    } else if (tab == 3) {
+      params = { is_terrace: 1 }
+    }
+    params.page = current
+    params.per_page = 2
+    setKey([[],[],[]])
+    setList([])
+    getGiftList(params).then(res => {
+
+      let list_gift = res.data
       let ids = gift_ids[tab-1]
-      let key:any = []
-      for( let i in list){
+      let arr:any = [];
+      let key = [...select_key]
+      for( let i in list_gift){
         for( let a in ids ){
-          if(list[i].id = ids[a]){
-            key.push(i)
+          console.log(list_gift[i])
+          if(list_gift[i].id == ids[a]){
+            arr.push(i)
           }
         }
       }
+      key[tab-1] = arr
+      console.log(key)
+      setKey(key)
       //  设置keys
       setTotal(res.meta.pagination.total)
+      setList(res.data)
     })
   }
 
@@ -213,52 +227,63 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
     onChange: (selectedRowKeys: any, selectedRows: any) => {
       console.log(selectedRowKeys,'keys')
       if (selectedRows.length) {
+
         let id: any = [];
-        let ids = [...gift_ids];
+        let key = JSON.parse(JSON.stringify(select_key));
+        let ids = JSON.parse(JSON.stringify(gift_ids));
+        let select_list = JSON.parse(JSON.stringify(gift_selected_list));
         for (let i in selectedRows) {
           id.push(selectedRows[i].id)
+          select_list[tab - 1].push(selectedRows[i])
         }
-        let key = [...select_key]
+        setGiftSelectList(select_list)
         key[tab - 1] = selectedRowKeys
         setKey(key)
-        ids[tab-1] = id;
+        ids[tab-1] = [...ids[tab-1],...id];
         setIds(ids)
-        let select_list = [...gift_selected_list]
-        select_list[tab-1] = selectedRows
-        setGiftSelectList(select_list)
-      } else {
-        let ids = [...gift_ids];
-        let key = [...select_key]
-        let select_list = [...gift_selected_list];
-        ids[tab-1] = [];
-        select_list[tab-1] = []
-        key[tab - 1] = []
-        setIds(ids)
-        setKey(key)
-        setGiftSelectList(select_list)
       }
     },
-    // onSelect: (record: any, selected: boolean,) => {
-    //   if(selected){
-    //     let ids: any = JSON.parse(JSON.stringify([...gift_ids]))
-    //     let key: any = JSON.parse(JSON.stringify([...select_key]))
-    //     for(let i in gift_list){
-    //       if(gift_list[i].id == record.id){
-    //         console.log(333,key[tab-1])
-    //         key[tab-1].push(Number(i))
-    //         console.log(444,key[tab-1])
+    onSelect: (record: any, selected: boolean,) => {
+      if(!selected){
+        let ids: any = JSON.parse(JSON.stringify([...gift_ids]))
+        let key: any = JSON.parse(JSON.stringify([...select_key]))
+        let select_list = JSON.parse(JSON.stringify(gift_selected_list));
+        ids[tab-1] = ids[tab-1].filter((res: any) => res != record.id)
+        for(let i in gift_list){
+          if(gift_list[i].id == record.id){
+             key[tab-1] = key[tab-1].filter((res: any) => res != i)
+          }
+        }
+        select_list = select_list.filter((res: any) => res.id != record.id)
+        setKey(key)
+        setIds(ids)
+        setGiftSelectList(select_list)
+        console.log(ids,key,record)
+      }
+    },
+    onSelectAll: (selected: any, record: boolean,) => {
+      console.log(record,selected,222)
+      if(!selected){
+        let ids: any = JSON.parse(JSON.stringify([...gift_ids]))
+        let key: any = JSON.parse(JSON.stringify([...select_key]));
+        let select_list = JSON.parse(JSON.stringify(gift_selected_list));
+        key[tab - 1] = []
+        for(let i in gift_list){
+          ids[tab-1] = ids[tab-1].filter((res: any) => res != gift_list[i].id)
+          // select_list = select_list.filter((res: any) => res.id != gift_list[i].id)
+          for(let a in select_list){
+            if(select_list[a].id == gift_list[i].id){
+              select_list = select_list.filter((res: any) => res.id != gift_list[i].id)
+            }
+          }
 
-    //       }
-    //     }
-    //     ids[tab-1].push(record.id)
-    //     setIds(ids)
-    //     setKey(key)
-
-    //     console.log(key,ids)
-    //   }else {
-
-    //   }
-    // },
+        }
+        console.log(select_list)
+        setGiftSelectList(select_list)
+        setKey(key)
+        setIds(ids)
+      }
+    },
     getCheckboxProps: async (record: any) => {
       let key: any = select_key
       // console.log(gift_ids,record)
