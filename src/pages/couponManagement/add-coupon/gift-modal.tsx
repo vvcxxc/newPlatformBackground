@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Modal, Table, Form, Input, Select, Row, Col, Button, Tabs } from 'antd'
 import styles from './index.less'
 import { getGiftList } from './service'
+import { stubArray } from 'lodash';
 const { TabPane } = Tabs;
 
 interface Props {
@@ -20,14 +21,17 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
   const [select_key, setKey] = useState([[], [], []]); // 三个tab table的key
   const [gift_type, setType] = useState(null); // 优惠券类型
   const [name, setName] = useState(''); // 名字
-  const [params, setParams] = useState({}); // 请求参数
+  const [params, setParams] = useState({is_terrace: 0}); // 请求参数
   const [gift_ids, setIds] = useState([[], [], []]); // 三个table的id
 
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState()
 
   useEffect(() => {
     if (store) {
-      getGiftList({ store_id: store.id, is_terrace: 0 }).then(res => {
+      getGiftList({ store_id: store.id, is_terrace: 0, }).then(res => {
         setList(res.data)
+        setTotal(res.meta.pagination.total)
       })
     }
 
@@ -47,6 +51,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
     setName('')
     setType(null)
     setList([])
+    setPage(1)
     if (key == 1) { // 获取我的礼品
       params = { store_id: store.id, is_terrace: 0 }
     } else if (key == 2) { // 获取商圈礼品
@@ -57,6 +62,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
     setParams(params)
     getGiftList(params).then(res => {
       setList(res.data)
+      setTotal(res.meta.pagination.total)
     })
   }
 
@@ -75,6 +81,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
       data.gift_type = gift_type ? gift_type : undefined;
       getGiftList(data).then(res => {
         setList(res.data)
+        setTotal(res.meta.pagination.total)
       })
     }
 
@@ -97,6 +104,7 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
     setParams(params)
     getGiftList(params).then(res => {
       setList(res.data)
+      setTotal(res.meta.pagination.total)
     })
   }
 
@@ -105,6 +113,44 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
     let list = [...gift_selected_list[0], ...gift_selected_list[1], ...gift_selected_list[2]]
     onChange(id,list)
   }
+
+
+  const pageChange = (pagination: any) => {
+    let {current } = pagination
+    setPage(current)
+    let params = {...params}
+    if (tab == 1) { // 获取我的礼品
+      params = { store_id: store.id, is_terrace: 0 }
+    } else if (tab == 2) { // 获取商圈礼品
+      params = { business_district_id: store.business_district_id, is_terrace: 0, store_id: store.id  }
+    } else if (tab == 3) {
+      params = { is_terrace: 1 }
+    }
+    setKey([[],[],[]])
+    setList([])
+    getGiftList(params).then(res => {
+
+      let list_gift = res.data
+      let ids = gift_ids[tab-1]
+      let arr:any = [];
+      let key = [...select_key]
+      for( let i in list_gift){
+        for( let a in ids ){
+          console.log(list_gift[i])
+          if(list_gift[i].id == ids[a]){
+            arr.push(i)
+          }
+        }
+      }
+      key[tab-1] = arr
+      console.log(key)
+      setKey(key)
+      //  设置keys
+      setTotal(res.meta.pagination.total)
+      setList(res.data)
+    })
+  }
+
 
   const GiftList = [
     {
@@ -178,34 +224,60 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
 
   const rowSelection = {
     onChange: (selectedRowKeys: any, selectedRows: any) => {
+      console.log(selectedRowKeys,'keys')
       if (selectedRows.length) {
+
         let id: any = [];
-        let ids = [...gift_ids];
+        let key = JSON.parse(JSON.stringify(select_key));
+        let ids = JSON.parse(JSON.stringify(gift_ids));
+        let select_list = JSON.parse(JSON.stringify(gift_selected_list));
         for (let i in selectedRows) {
           id.push(selectedRows[i].id)
+          select_list[tab - 1].push(selectedRows[i])
         }
-        let key = [...select_key]
+        setGiftSelectList(select_list)
         key[tab - 1] = selectedRowKeys
         setKey(key)
-        ids[tab-1] = id;
+        ids[tab-1] = [...ids[tab-1],...id];
         setIds(ids)
-        let select_list = [...gift_selected_list]
-        select_list[tab-1] = selectedRows
-        setGiftSelectList(select_list)
-      } else {
-        let ids = [...gift_ids];
-        let key = [...select_key]
-        let select_list = [...gift_selected_list];
-        ids[tab-1] = [];
-        select_list[tab-1] = []
-        key[tab - 1] = []
-        setIds(ids)
+      }
+    },
+    onSelect: (record: any, selected: boolean,) => {
+      if(!selected){
+        let ids: any = JSON.parse(JSON.stringify([...gift_ids]))
+        let key: any = JSON.parse(JSON.stringify([...select_key]))
+        let select_list = JSON.parse(JSON.stringify(gift_selected_list));
+        ids[tab-1] = ids[tab-1].filter((res: any) => res != record.id)
+        for(let i in gift_list){
+          if(gift_list[i].id == record.id){
+             key[tab-1] = key[tab-1].filter((res: any) => res != i)
+          }
+        }
+        select_list = select_list.filter((res: any) => res.id != record.id)
         setKey(key)
+        setIds(ids)
         setGiftSelectList(select_list)
+        console.log(ids,key,record)
+      }
+    },
+    onSelectAll: (selected: any, record: boolean,) => {
+      if(!selected){
+        let ids: any = JSON.parse(JSON.stringify([...gift_ids]))
+        let key: any = JSON.parse(JSON.stringify([...select_key]));
+        let select_list = JSON.parse(JSON.stringify(gift_selected_list));
+        key[tab - 1] = []
+        for(let i in gift_list){
+          ids[tab-1] = ids[tab-1].filter((res: any) => res != gift_list[i].id)
+          select_list[tab-1] = select_list[tab-1].filter((res: any) => res.id != gift_list[i].id)
+        }
+        setGiftSelectList(select_list)
+        setKey(key)
+        setIds(ids)
       }
     },
     getCheckboxProps: async (record: any) => {
       let key: any = select_key
+      // console.log(gift_ids,record)
       for (let i in gift_list) {
         if (gift_ids[tab - 1].includes(gift_list[i].id)) {
           key[tab - 1].push(Number(i))
@@ -249,11 +321,22 @@ export default function GiftModal({ visible, store, onChange, onClose }: Props) 
         </Row>
       </Form>
       {
-        gift_list.length ? <Table
+        gift_list.length ? (
+        <Table
           columns={GiftList}
           dataSource={gift_list}
           rowSelection={rowSelection}
-        /> : null
+          onChange={pageChange}
+          pagination={{
+            current: page,
+            pageSize: 15,
+            total,
+            showTotal: () => {
+              return `共${total}条`;
+            },
+          }}
+        />
+        ) : null
       }
 
     </div>

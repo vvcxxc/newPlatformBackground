@@ -37,8 +37,35 @@ export default class editCity extends Component {
     }
 
     componentDidMount = () => {
+        const id = this.props.location.query.id;
         request('/json/regions').then(res => {
-            this.setState({ regionsList: res.data })
+            let regionsList = res.data
+            request(`/admin/city/${id}`, {
+                method: 'GET',
+            }).then(res => {
+
+                let regionsId = res.data.province_id, cityId = res.data.city_id;
+                for (let i = 0; i < regionsList.length; i++) {
+                    if (regionsList[i].id == regionsId) {
+                        for (let j = 0; j < regionsList[i].city.length; j++) {
+                            if (regionsList[i].city[j].id == cityId) {
+                                this.setState({
+                                    regionsList,
+                                    cityList: regionsList[i].city,
+                                    isDefault: res.data.is_default,
+                                    regionsId: res.data.province_id,
+                                    regions: res.data.province_name,
+                                    cityId: res.data.city_id,
+                                    city: res.data.city_name
+                                })
+
+
+                            }
+                        }
+                    }
+                }
+            })
+
         }).catch(err => {
             notification.success({
                 message: '查询省市失败',
@@ -47,18 +74,8 @@ export default class editCity extends Component {
         })
 
 
-        const id = this.props.location.query.id;
-        request(`/admin/city/${id}`, {
-            method: 'GET',
-        }).then(res => {
-            this.setState({
-                isDefault: res.data.is_default,
-                regionsId: res.data.province_id,
-                regions: res.data.province_name,
-                cityId: res.data.city_id,
-                city: res.data.city_name
-            })
-        })
+
+
     }
 
     setRegions = (regionsId: any) => {

@@ -72,7 +72,7 @@ export default Form.create()(
 
     componentDidMount() {
       getOssDate().then(res => {
-        this.setState({ oss_data_data: res.data })
+        this.setState({ oss_data_data: res })
       })
       // 获取使用规则列表
       getRuleList().then(res => {
