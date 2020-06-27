@@ -176,7 +176,7 @@ export default Form.create()(
                         key: 'opearation',
                         width: 100,
                         render: (text: any, record: any) => (
-                            <a>详情</a>
+                            <a onClick={() => router.push(`/shopManagement/store-auditfail-detail/?id=${record.id}`)}>详情</a>
                         )
                     },
                 ]

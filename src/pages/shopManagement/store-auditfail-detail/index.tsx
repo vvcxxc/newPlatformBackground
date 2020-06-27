@@ -65,7 +65,41 @@ export default class storeAuditFailDetail extends Component {
                 if (status === 'complete' && result.info === 'OK') {
                     // result为对应的地理位置详细信息
                     let address = result.regeocode.formattedAddress;
-                    this.setState({ map_address: address })
+                    this.setState({
+                        map_address: address,
+                        provinceName: result.regeocode.addressComponent.province,
+                        cityName: result.regeocode.addressComponent.city,
+                        districtName: result.regeocode.addressComponent.district
+                    }, () => {
+                        // console.log(this.state.all_city)
+                        let list = this.state.all_city;
+                        let provinceName = this.state.provinceName;
+                        let cityName = this.state.cityName;
+                        let districtName = this.state.districtName;
+                        for (let i in list) {
+                            if (list[i].name == provinceName) {
+                                this.setState({
+                                    provinceID: list[i].id
+                                })
+                                let city = list[i].city;
+                                for (let a in city) {
+                                    if (city[a].name == cityName) {
+                                        this.setState({
+                                            cityID: city[a].id
+                                        })
+                                    }
+                                    let county = city[a].district;
+                                    for (let b in county) {
+                                        if (county[b].name == districtName) {
+                                            this.setState({
+                                                districtID: county[b].id
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    })
                 }
             })
         }
@@ -82,7 +116,13 @@ export default class storeAuditFailDetail extends Component {
             console.log(status, result)
             if (status === 'complete') {
                 this.setState({
-                    location: { longitude: result.geocodes[0].location.lng, latitude: result.geocodes[0].location.lat },
+                    location: {
+                        longitude: result.geocodes[0].location.lng,
+                        latitude: result.geocodes[0].location.lat,
+                        provinceName: result.geocodes[0].addressComponent.province,
+                        cityName: result.geocodes[0].addressComponent.city,
+                        districtName: result.geocodes[0].addressComponent.district
+                    },
                     map_address: ""
                 })
             }
@@ -154,6 +194,17 @@ export default class storeAuditFailDetail extends Component {
         },
         mapShow: false,
 
+
+        provinceID: 0,
+        provinceName: "",
+        cityID: 0,
+        cityName: "",
+        districtID: 0,
+        districtName: "",
+        all_city: [],
+        business_remarks: "",
+        identity_remarks: "",
+        store_remarks: "",
     }
 
 
@@ -165,6 +216,7 @@ export default class storeAuditFailDetail extends Component {
             let c = b.replace(/city/g, "children")
             let d = c.replace(/district/g, "children")
             this.setState({ city_list: JSON.parse(d) })
+            this.setState({ all_city: res.data })
         })
     }
 
@@ -270,7 +322,13 @@ export default class storeAuditFailDetail extends Component {
                 IDNum: res.data.identity_card,
                 IDValidity: res.data.identity_card_valid_until,
                 isSelcetDateID: res.data.is_identity_card_long_time == 1 ? 0 : 1,
-                location: { longitude: res.data.lng, latitude: res.data.lat }
+                location: { longitude: res.data.lng, latitude: res.data.lat },
+                provinceID: res.data.province_id,
+                cityID: res.data.city_id,
+                districtID: res.data.county_id,
+                business_remarks: res.data.business_remarks,
+                identity_remarks: res.data.identity_remarks,
+                store_remarks: res.data.store_remarks
             })
         })
 
@@ -570,7 +628,10 @@ export default class storeAuditFailDetail extends Component {
             identity_card_handheld_image,
             IDName,
             IDNum,
-            location
+            location,
+            provinceID,
+            cityID,
+            districtID
         } = this.state;
         if (storeName == "" || storeAddress == "" || detailAddress == "" || storeTel == "" || storeEmail == "" || bussinessType == ""
             || storeImg == "" || environmental_photo.length != 2 || bussinessImg == "" || registerNum == "" || licenseName == "" || legalPersonName == ""
@@ -607,18 +668,73 @@ export default class storeAuditFailDetail extends Component {
             }
         }
 
+
+        let data = {
+            store_name: storeName,
+            store_address: storeAddress,
+            lng: location.longitude,
+            lat: location.latitude,
+            store_address_info: detailAddress,
+            store_telephone: storeTel,
+            email: storeEmail,
+            category_id: bussinessType,
+            door_photo: storeImg,
+            environmental_photo,
+            business_license_photo: bussinessImg,
+            registration_number: registerNum,
+            license_name: licenseName,
+            legal_person_name: legalPersonName,
+            is_license_long_time: isSelcetDateLicense == 1 ? 0 : 1,
+            identity_card_positive_image,
+            identity_card_opposite_image,
+            identity_card_handheld_image,
+            identity_name: IDName,
+            identity_card: IDNum,
+            is_identity_card_long_time: isSelcetDateID == 1 ? 0 : 1,
+            examine_type: isDefault == 1 ? 3 : 4,
+            province_id: provinceID,
+            city_id: cityID,
+            county_id: districtID
+        }
+        if (isSelcetDateLicense == 1) {
+            data.license_valid_until = validity;
+        }
+        if (isSelcetDateID == 1) {
+            data.identity_card_valid_until = IDValidity;
+        }
+        if (isDefault == 1) {
+            data.business_districts_id = storeType;
+            data.store_type = 3;
+            data.business_type = 3;
+            data.identity_type = 3;
+        } else if (isDefault == 0) {
+            if (storeMsgFail) {
+                data.store_type = 4;
+                data.store_remarks = storeFailSeason;
+            } else {
+                data.store_type = 3;
+            }
+
+            if (licenseMsgFail) {
+                data.business_type = 4;
+                data.business_remarks = licenseFailSeason;
+            } else {
+                data.business_type = 3;
+            }
+
+            if (IDMsgFail) {
+                data.identity_type = 4;
+                data.identity_remarks = IDFailSeason;
+            } else {
+                data.identity_type = 3;
+            }
+
+        }
+
         const id = this.props.location.query.id;
         request(`/admin/store/audit/${id}`, {
             method: 'PUT',
-            data: {
-                store_name: storeName,
-                store_address: storeAddress,
-                lng: location.longitude,
-                lat: location.latitude,
-                store_address_info: detailAddress,
-                store_telephone: storeTel,
-
-            }
+            data,
         }).then(res => {
 
         })
@@ -667,7 +783,10 @@ export default class storeAuditFailDetail extends Component {
             isSelcetDateID,
             storeFailSeason,
             licenseFailSeason,
-            IDFailSeason
+            IDFailSeason,
+            store_remarks,
+            business_remarks,
+            identity_remarks
         } = this.state;
         const uploadButtonStoreImg = (
             <div className={styles.uploadDefault}>
@@ -713,17 +832,28 @@ export default class storeAuditFailDetail extends Component {
         );
         return (
             <div>
-                <Card title="门店信息" bordered={false} style={{ width: "100%" }} extra={<span style={{ "color": "red" }}>审核失败</span>}>
+                <Card title="门店信息" bordered={false} style={{ width: "100%" }} extra={
+                    store_remarks ? (
+                        <span style={{ "color": "#D9001B" }}>审核失败</span>
+                    ) : (
+                            <span style={{ "color": "#70B603" }}>审核成功</span>
+                        )
+
+                }>
                     <Form {...formItemLayout}
                     >
-                        <div style={{ width: '100%', background: "rgba(236, 128, 141, 0.972549019607843)" }}>
-                            <Form.Item wrapperCol={{ offset: 1 }} style={{ marginBottom: '-10px' }}>
-                                <div style={{ fontWeight: "bold" }}>审核失败</div>
-                            </Form.Item>
-                            <Form.Item wrapperCol={{ offset: 1 }}>
-                                <div>原因：XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</div>
-                            </Form.Item>
-                        </div>
+                        {
+                            store_remarks ? (
+                                <div style={{ width: '100%', background: "rgba(236, 128, 141, 0.972549019607843)" }}>
+                                    <Form.Item wrapperCol={{ offset: 1 }} style={{ marginBottom: '-10px' }}>
+                                        <div style={{ fontWeight: "bold" }}>审核失败</div>
+                                    </Form.Item>
+                                    <Form.Item wrapperCol={{ offset: 1 }}>
+                                        <div>原因：{store_remarks}</div>
+                                    </Form.Item>
+                                </div>
+                            ) : ""
+                        }
                         <Form.Item label="门店名称">
                             <Input value={storeName} onChange={this.handleChangeInp.bind(this, 'storeName')} />
                         </Form.Item>
@@ -831,9 +961,28 @@ export default class storeAuditFailDetail extends Component {
                     </Form>
                 </Card>
 
-                <Card title="营业执照备案" bordered={false} style={{ width: "100%", marginTop: "20px" }}>
+                <Card title="营业执照备案" bordered={false} style={{ width: "100%", marginTop: "20px" }} extra={
+                    business_remarks ? (
+                        <span style={{ "color": "#D9001B" }}>审核失败</span>
+                    ) : (
+                            <span style={{ "color": "#70B603" }}>审核成功</span>
+                        )
+
+                }>
                     <Form {...formItemLayout}
                     >
+                        {
+                            business_remarks ? (
+                                <div style={{ width: '100%', background: "rgba(236, 128, 141, 0.972549019607843)" }}>
+                                    <Form.Item wrapperCol={{ offset: 1 }} style={{ marginBottom: '-10px' }}>
+                                        <div style={{ fontWeight: "bold" }}>审核失败</div>
+                                    </Form.Item>
+                                    <Form.Item wrapperCol={{ offset: 1 }}>
+                                        <div>原因：{business_remarks}</div>
+                                    </Form.Item>
+                                </div>
+                            ) : ""
+                        }
                         <Form.Item label="营业执照" wrapperCol={
                             {
                                 xs: { span: 6 },
@@ -883,9 +1032,28 @@ export default class storeAuditFailDetail extends Component {
                     </Form>
                 </Card>
 
-                <Card title="法人身份证信息" bordered={false} style={{ width: "100%", marginTop: "20px" }}>
+                <Card title="法人身份证信息" bordered={false} style={{ width: "100%", marginTop: "20px" }} extra={
+                    identity_remarks ? (
+                        <span style={{ "color": "#D9001B" }}>审核失败</span>
+                    ) : (
+                            <span style={{ "color": "#70B603" }}>审核成功</span>
+                        )
+
+                }>
                     <Form {...formItemLayout}
                     >
+                        {
+                            identity_remarks ? (
+                                <div style={{ width: '100%', background: "rgba(236, 128, 141, 0.972549019607843)" }}>
+                                    <Form.Item wrapperCol={{ offset: 1 }} style={{ marginBottom: '-10px' }}>
+                                        <div style={{ fontWeight: "bold" }}>审核失败</div>
+                                    </Form.Item>
+                                    <Form.Item wrapperCol={{ offset: 1 }}>
+                                        <div>原因：{identity_remarks}</div>
+                                    </Form.Item>
+                                </div>
+                            ) : ""
+                        }
                         <Form.Item label="身份证照片" wrapperCol={
                             {
                                 xs: { span: 8 },
