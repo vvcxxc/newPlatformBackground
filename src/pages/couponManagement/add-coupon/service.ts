@@ -27,3 +27,9 @@ export const getStoreList = (params: StoreParams) =>
    */
 export const getGiftList = (params: any) =>
   request.get('/admin/gift/getBindableGift',{params})
+
+/**
+ * 创建抢购活动
+ */
+export const createCoupon = (data: any) =>
+  request.post('/admin/coupon/fastCreate', {data})
