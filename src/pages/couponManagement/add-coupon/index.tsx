@@ -380,6 +380,16 @@ export default Form.create()(
       })
     }
 
+    /**
+     * 删除礼品
+     */
+    deleteGift = (item: any) => {
+      let gift_id = JSON.parse(JSON.stringify(this.state.gift_id))
+      let gift_list = JSON.parse(JSON.stringify(this.state.gift_list))
+      gift_id = gift_id.filter((res: any) => res != item.id)
+      gift_list = gift_list.filter((res: any) => res.id != item.id)
+      this.setState({gift_id, gift_list})
+    }
 
 
 
@@ -480,35 +490,19 @@ export default Form.create()(
           align: 'center'
         },
         {
-          title: '使用门槛',
-          dataIndex: 'use_min_price',
-          key: 'use_min_price',
-          align: 'center'
-        },
-        {
-          title: '总库存(个)',
-          dataIndex: 'total_repertory_num',
-          key: 'total_repertory_num',
-          align: 'center'
-        },
-        {
           title: '剩余数量(个)',
           dataIndex: 'total_surplus_num',
           key: 'total_surplus_num',
           align: 'center'
         },
         {
-          title: '发放限制(人/个)',
-          dataIndex: 'each_num',
-          key: 'each_num',
+          title: '操作',
+          dataIndex: 'index',
+          render: (text: any, record: any, index: number) => {
+            return <Icon type="delete" onClick={this.deleteGift.bind(this, record)} />;
+          },
           align: 'center'
-        },
-        {
-          title: '有效期(天)',
-          dataIndex: 'validity_day',
-          key: 'validity_day',
-          align: 'center'
-        },
+        }
       ]
 
       const ownStoreColumns = [
@@ -765,7 +759,7 @@ export default Form.create()(
 
           <StoreModal visible={is_show_store} onChange={this.storeChange} onClose={this.close} />
 
-          <GiftModal visible={is_show_gift} store={store_list[0] ? store_list[0] : null} onClose={this.close} onChange={this.giftChange} />
+          <GiftModal visible={is_show_gift} id={this.state.gift_id} store={store_list[0] ? store_list[0] : null} onClose={this.close} onChange={this.giftChange} />
 
 
         </div >
