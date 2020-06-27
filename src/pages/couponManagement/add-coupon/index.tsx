@@ -503,7 +503,7 @@ export default Form.create()(
           dataIndex: 'facade_image',
           key: 'facade_image',
           render: (text: any, record: any) => {
-            return <img src={record.facade_image} style={{ width: 50, height: 50 }} />
+            return <img src={record.facade_image.includes('http') ? record.facade_image : 'http://oss.tdianyi.com/' + record.facade_image} style={{width: 50, height: 50}} />
           }
         },
         {
