@@ -383,6 +383,8 @@ export default Form.create()(
 
 
 
+
+
     render() {
       const {
         coupon_type,
@@ -584,7 +586,7 @@ export default Form.create()(
               <Form.Item label="抢购价">
                 <Input value={rush_money} onChange={this.handleChange.bind(this, 'rush_money')} suffix="元" />
               </Form.Item>
-              <div>
+              <div className={styles.select_time}>
                 <Form.Item label="抢购时间">
                   <RangePicker
                     showTime={{ format: 'HH:mm',  defaultValue: [moment().add(6, 'm'), moment('11:59:59', 'HH:mm:ss')] }}
@@ -593,8 +595,8 @@ export default Form.create()(
                     format="YYYY-MM-DD HH:mm"
                     placeholder={['开始时间', '结束时间']}
                     onOk={this.onOkSelectTime}
-
                   />
+                  <div style={{ fontSize: 12, width: 500, color: '#D9001B' }}>注：抢购开始时间必须大于当前的时间</div>
                 </Form.Item>
                 <Form.Item label="抢购数量">
                   <Input value={repertory_num} onChange={this.handleChange.bind(this, 'repertory_num')} suffix="张" />
