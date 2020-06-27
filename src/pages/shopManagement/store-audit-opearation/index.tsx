@@ -730,7 +730,7 @@ export default class storeAuditOpearation extends Component {
             method: 'PUT',
             data,
         }).then(res => {
-
+            message.success("操作成功")
         })
     }
 

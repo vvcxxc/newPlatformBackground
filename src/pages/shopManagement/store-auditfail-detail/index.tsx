@@ -736,7 +736,7 @@ export default class storeAuditFailDetail extends Component {
             method: 'PUT',
             data,
         }).then(res => {
-
+            message.success("操作成功")
         })
     }
 
