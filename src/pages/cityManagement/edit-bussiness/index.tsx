@@ -73,7 +73,9 @@ export default class editBussiness extends Component {
         this.setState({ cityId, city })
     }
     changeName = (e: any) => {
-        this.setState({ name: e.target.value })
+        if (e.target.value.length <= 20) {
+            this.setState({ name: e.target.value })
+        }
     }
     sumbit = () => {
         const { cityId, name } = this.state;
