@@ -62,10 +62,45 @@ export default class storeAuditOpearation extends Component {
             }
             this.setState({ location })
             this.geocoder.getAddress([location.longitude, location.latitude], (status: string, result: any) => {
+                console.log(result)
                 if (status === 'complete' && result.info === 'OK') {
                     // result为对应的地理位置详细信息
                     let address = result.regeocode.formattedAddress;
-                    this.setState({ map_address: address })
+                    this.setState({
+                        map_address: address,
+                        provinceName: result.regeocode.addressComponent.province,
+                        cityName: result.regeocode.addressComponent.city,
+                        districtName: result.regeocode.addressComponent.district
+                    }, () => {
+                        // console.log(this.state.all_city)
+                        let list = this.state.all_city;
+                        let provinceName = this.state.provinceName;
+                        let cityName = this.state.cityName;
+                        let districtName = this.state.districtName;
+                        for (let i in list) {
+                            if (list[i].name == provinceName) {
+                                this.setState({
+                                    provinceID: list[i].id
+                                })
+                                let city = list[i].city;
+                                for (let a in city) {
+                                    if (city[a].name == cityName) {
+                                        this.setState({
+                                            cityID: city[a].id
+                                        })
+                                    }
+                                    let county = city[a].district;
+                                    for (let b in county) {
+                                        if (county[b].name == districtName) {
+                                            this.setState({
+                                                districtID: county[b].id
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    })
                 }
             })
         }
@@ -82,7 +117,13 @@ export default class storeAuditOpearation extends Component {
             console.log(status, result)
             if (status === 'complete') {
                 this.setState({
-                    location: { longitude: result.geocodes[0].location.lng, latitude: result.geocodes[0].location.lat },
+                    location: {
+                        longitude: result.geocodes[0].location.lng,
+                        latitude: result.geocodes[0].location.lat,
+                        provinceName: result.geocodes[0].addressComponent.province,
+                        cityName: result.geocodes[0].addressComponent.city,
+                        districtName: result.geocodes[0].addressComponent.district
+                    },
                     map_address: ""
                 })
             }
@@ -154,6 +195,15 @@ export default class storeAuditOpearation extends Component {
         },
         mapShow: false,
 
+
+        provinceID: 0,
+        provinceName: "",
+        cityID: 0,
+        cityName: "",
+        districtID: 0,
+        districtName: "",
+        all_city: [],
+
     }
 
 
@@ -165,6 +215,7 @@ export default class storeAuditOpearation extends Component {
             let c = b.replace(/city/g, "children")
             let d = c.replace(/district/g, "children")
             this.setState({ city_list: JSON.parse(d) })
+            this.setState({ all_city: res.data })
         })
     }
 
@@ -270,7 +321,10 @@ export default class storeAuditOpearation extends Component {
                 IDNum: res.data.identity_card,
                 IDValidity: res.data.identity_card_valid_until,
                 isSelcetDateID: res.data.is_identity_card_long_time == 1 ? 0 : 1,
-                location: { longitude: res.data.lng, latitude: res.data.lat }
+                location: { longitude: res.data.lng, latitude: res.data.lat },
+                provinceID: res.data.province_id,
+                cityID: res.data.city_id,
+                districtID: res.data.county_id,
             })
         })
 
@@ -570,7 +624,10 @@ export default class storeAuditOpearation extends Component {
             identity_card_handheld_image,
             IDName,
             IDNum,
-            location
+            location,
+            provinceID,
+            cityID,
+            districtID
         } = this.state;
         if (storeName == "" || storeAddress == "" || detailAddress == "" || storeTel == "" || storeEmail == "" || bussinessType == ""
             || storeImg == "" || environmental_photo.length != 2 || bussinessImg == "" || registerNum == "" || licenseName == "" || legalPersonName == ""
@@ -607,20 +664,73 @@ export default class storeAuditOpearation extends Component {
             }
         }
 
+        let data = {
+            store_name: storeName,
+            store_address: storeAddress,
+            lng: location.longitude,
+            lat: location.latitude,
+            store_address_info: detailAddress,
+            store_telephone: storeTel,
+            email: storeEmail,
+            category_id: bussinessType,
+            door_photo: storeImg,
+            environmental_photo,
+            business_license_photo: bussinessImg,
+            registration_number: registerNum,
+            license_name: licenseName,
+            legal_person_name: legalPersonName,
+            is_license_long_time: isSelcetDateLicense == 1 ? 0 : 1,
+            identity_card_positive_image,
+            identity_card_opposite_image,
+            identity_card_handheld_image,
+            identity_name: IDName,
+            identity_card: IDNum,
+            is_identity_card_long_time: isSelcetDateID == 1 ? 0 : 1,
+            examine_type: isDefault == 1 ? 3 : 4,
+            province_id: provinceID,
+            city_id: cityID,
+            county_id: districtID
+        }
+        if (isSelcetDateLicense == 1) {
+            data.license_valid_until = validity;
+        }
+        if (isSelcetDateID == 1) {
+            data.identity_card_valid_until = IDValidity;
+        }
+        if (isDefault == 1) {
+            data.business_districts_id = storeType;
+            data.store_type = 3;
+            data.business_type = 3;
+            data.identity_type = 3;
+        } else if (isDefault == 0) {
+            if (storeMsgFail) {
+                data.store_type = 4;
+                data.store_remarks = storeFailSeason;
+            } else {
+                data.store_type = 3;
+            }
+
+            if (licenseMsgFail) {
+                data.business_type = 4;
+                data.business_remarks = licenseFailSeason;
+            } else {
+                data.business_type = 3;
+            }
+
+            if (IDMsgFail) {
+                data.identity_type = 4;
+                data.identity_remarks = IDFailSeason;
+            } else {
+                data.identity_type = 3;
+            }
+
+        }
         const id = this.props.location.query.id;
         request(`/admin/store/audit/${id}`, {
             method: 'PUT',
-            data: {
-                store_name: storeName,
-                store_address: storeAddress,
-                lng: location.longitude,
-                lat: location.latitude,
-                store_address_info: detailAddress,
-                store_telephone: storeTel,
-
-            }
+            data,
         }).then(res => {
-
+            message.success("操作成功")
         })
     }
 
