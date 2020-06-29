@@ -146,7 +146,7 @@ export default Form.create()(
                                     </Button>
 
                                     </Col>
-                                    <Col>
+                                    <Col md={5} sm={26}>
                                         <Button
                                             type="primary"
                                             style={{
