@@ -10,6 +10,11 @@ import 'braft-editor/dist/index.css';
 export default class CouponDetail extends Component {
 
     state = {
+        imgUrl: '',
+        imgVisible: false,
+        videoUrl: '',
+        videoVisible: false,
+        phoneVisible: false,
         editorState: BraftEditor.createEditorState(null), // 创建一个空的editorState作为初始值
         data: {
             id: 0,//优惠券id
@@ -33,6 +38,14 @@ export default class CouponDetail extends Component {
                     file_path: ''//附件路径
                 }
             ],
+            store: {
+                id: 10,
+                facade_image: "",
+                store_name: "",
+                detailed_address: "",
+                contact_person: "",
+                contact_phone: "",
+            },
             rush_activity: {
                 id: 0,//活动id	
                 market_money: 0,//市场金额	
@@ -70,16 +83,22 @@ export default class CouponDetail extends Component {
                     }
                 ]
             },
-            coupon_no: ''//C20200619257148
+            coupon_no: '',//C20200619257148
         },
+        rush_rule: {}
     }
 
-
     componentDidMount() {
-        request('/admin/coupon/' + 'C20200619257148', {
+        request('/admin/coupon/' + this.props.location.query.id, {
             method: "GET",
         }).then(res => {
-            res.data && this.setState({ data: res.data });
+            let rush_rule = res.data.rush_activity.rush_description, temp = [];
+            if (rush_rule && rush_rule.length) {
+                for (let i in rush_rule) {
+                    temp.push({ id: Number(i) + 1, item: rush_rule[i] })
+                }
+            }
+            res.data && this.setState({ data: res.data, rush_rule: temp });
         }).catch(err => {
         });
     }
@@ -95,97 +114,88 @@ export default class CouponDetail extends Component {
                 sm: { span: 10 },
             },
         };
-        const storeDataSource = [
-            {
-                key: '1',
-                name: '胡彦斌',
-                age: 32,
-                address: '西湖区湖底公园1号',
-            },
-            {
-                key: '2',
-                name: '胡彦祖',
-                age: 42,
-                address: '西湖区湖底公园1号',
-            },
-        ];
         const storeColumns = [
             {
-                title: '姓名',
-                dataIndex: 'name',
-                key: 'name',
+                title: '门店图片',
+                dataIndex: 'facade_image',
+                key: 'facade_image',
+                render: (facade_image: any) => <img className={styles.show_margin_img} src={'http://oss.tdianyi.com/' + facade_image} />,
             },
             {
-                title: '年龄',
-                dataIndex: 'age',
-                key: 'age',
+                title: '门店名称',
+                dataIndex: 'store_name',
+                key: 'store_name',
             },
             {
-                title: '住址',
-                dataIndex: 'address',
-                key: 'address',
+                title: '地址',
+                dataIndex: 'detailed_address',
+                key: 'detailed_address',
+            },
+            {
+                title: '联系人',
+                dataIndex: 'contact_person',
+                key: 'contact_person',
+            },
+            {
+                title: '联系电话',
+                dataIndex: 'contact_phone',
+                key: 'contact_phone',
             },
         ];
-        const ruleDataSource = [
-            {
-                key: '1',
-                name: '胡彦斌',
-                age: 32,
-                address: '西湖区湖底公园1号',
-            },
-            {
-                key: '2',
-                name: '胡彦祖',
-                age: 42,
-                address: '西湖区湖底公园1号',
-            },
-        ];
+
         const ruleColumns = [
             {
-                title: '姓名',
-                dataIndex: 'name',
-                key: 'name',
+                title: '序号',
+                dataIndex: 'id',
+                key: 'id',
             },
             {
-                title: '年龄',
-                dataIndex: 'age',
-                key: 'age',
-            },
-            {
-                title: '住址',
-                dataIndex: 'address',
-                key: 'address',
-            },
-        ];
-        const giftDataSource = [
-            {
-                key: '1',
-                name: '胡彦斌',
-                age: 32,
-                address: '西湖区湖底公园1号',
-            },
-            {
-                key: '2',
-                name: '胡彦祖',
-                age: 42,
-                address: '西湖区湖底公园1号',
-            },
+                title: '使用须知',
+                dataIndex: 'item',
+                key: 'item',
+            }
         ];
         const giftColumns = [
             {
-                title: '姓名',
-                dataIndex: 'name',
-                key: 'name',
+                title: '序号',
+                dataIndex: 'id',
+                key: 'id',
             },
             {
-                title: '年龄',
-                dataIndex: 'age',
-                key: 'age',
+                title: '礼品名称',
+                dataIndex: 'gift',
+                key: 'gift',
+                render: (gift: any) => <text>{gift.gift_name}</text>,
             },
             {
-                title: '住址',
-                dataIndex: 'address',
-                key: 'address',
+                title: '礼品类型',
+                dataIndex: 'gift',
+                key: 'gift',
+                render: (gift: any) => <text>{gift.gift_type == 1 ? '现金券' : gift.gift_type == 2 ? '商品券' : gift.gift_type == 3 ? '实物礼品' : ''}</text>,//1现金券 2商品券 3实物礼品
+            },
+            {
+                title: '面额',
+                dataIndex: 'gift',
+                key: 'gift',
+                render: (gift: any) => <text>{gift.gift_type == 1 ? '￥' + gift.worth_money : '-'}</text>,
+            },
+            {
+                title: '商品价值',
+                dataIndex: 'gift',
+                key: 'gift',
+                render: (gift: any) => <text>{gift.gift_type != 1 ? '￥' + gift.worth_money : '-'}</text>,
+            },
+            {
+                title: '剩余库存',
+                dataIndex: 'gift',
+                key: 'gift',
+                render: (gift: any) => <text>{!gift.is_astrict_repertory ? '-' : gift.total_surplus_num}</text>,
+            },
+            {
+                title: '占用数量',
+                dataIndex: 'give_num',
+                key: 'give_num',
+                render: (give_num: any) => <text>{give_num}</text>,
             },
         ];
         const {
@@ -205,7 +215,9 @@ export default class CouponDetail extends Component {
                         </Form.Item>
                         <Form.Item label="所属门店" style={{ marginBottom: '10px' }}></Form.Item>
                         <Form.Item wrapperCol={{ offset: 2 }} className={styles.show_margin}>
-                            <Table dataSource={storeDataSource} columns={storeColumns} pagination={false} />
+                            {
+                                data.store.id && <Table dataSource={[data.store]} columns={storeColumns} pagination={false} />
+                            }
                         </Form.Item>
                     </Form>
                 </Card>
@@ -218,8 +230,11 @@ export default class CouponDetail extends Component {
                         <Form.Item label="购买价">
                             <div className={styles.show_textalign}>{data.rush_activity.rush_money}元</div>
                         </Form.Item>
-                        <Form.Item label="发放数量">
-                            <div className={styles.show_textalign}>{data.rush_activity.repertory_num}张</div>
+                        <Form.Item label="抢购时间">
+                            <div className={styles.show_textalign}>{data.rush_activity.start_time} - {data.rush_activity.end_time}</div>
+                        </Form.Item>
+                        <Form.Item label="限购数量">
+                            <div className={styles.show_textalign}>{data.rush_activity.repertory_num ? data.rush_activity.repertory_num + '张' : '不限制'}</div>
                         </Form.Item>
                         <Form.Item label="限购设置">
                             <div className={styles.show_textalign}>{data.rush_activity.rush_astrict_buy_num}张/人</div>
@@ -227,24 +242,38 @@ export default class CouponDetail extends Component {
                         <Form.Item label="有效期">
                             <div className={styles.show_textalign}>购券日起{data.rush_activity.coupon_validity_day}天可用</div>
                         </Form.Item>
+                        <Form.Item label="是否可退款">
+                            <div className={styles.show_textalign}>{data.rush_activity.is_support_refund == 1 ? '是' : '否'}</div>
+                        </Form.Item>
                         <Form.Item label="使用须知" style={{ marginBottom: '10px' }}></Form.Item>
                         <Form.Item wrapperCol={{ offset: 2 }} className={styles.show_margin}>
-                            <Table dataSource={ruleDataSource} columns={ruleColumns} pagination={false} />
+                            {
+                                this.state.rush_rule.length && <Table dataSource={this.state.rush_rule} columns={ruleColumns} pagination={false} />
+                            }
                         </Form.Item>
                     </Form>
                 </Card>
                 <Card title="图文描述" bordered={false} style={{ width: "100%", marginTop: '20px' }}>
                     <Form {...formItemLayout}
                     >
+                        <Form.Item label="卡券图片" style={{ marginBottom: '10px' }}></Form.Item>
+                        <div className={styles.imgBox}>
+                            {
+                                data.coupon_image.length && data.coupon_image.map((item: any, index: any) => {
+                                    return (<img className={styles.imgItem} src={'http://oss.tdianyi.com/' + item.file_path} onClick={() => { this.setState({ imgUrl: item.file_path, imgVisible: true }) }} />)
+                                })
+                            }
+                        </div>
+                        <Form.Item label="主图视频" style={{ marginBottom: '10px' }}></Form.Item>
+                        <div className={styles.imgBox}>
+                            {
+                                data.master_video.length && data.master_video.map((item: any, index: any) => {
+                                    return (<video className={styles.imgItem} src={'http://oss.tdianyi.com/' + item.file_path} onClick={() => { this.setState({ videoUrl: item.file_path, videoVisible: true }) }} />)
+                                })
+                            }
+                        </div>
                         <Form.Item label="详情" style={{ marginBottom: '10px' }}></Form.Item>
-                        <Form.Item wrapperCol={{ offset: 2 }} style={{ width: "100%" }}>
-                            <div style={{ border: "1px solid #ccc" }}>
-                                <BraftEditor
-                                    value={editorState}
-                                    readOnly={true}
-                                />
-                            </div>
-                        </Form.Item>
+                        <Button type="primary"  className={styles.Bbtn} onClick={() => { this.setState({ phoneVisible: true }) }} >点击查看</Button>
                     </Form>
                 </Card>
                 <Card title="分享信息" bordered={false} style={{ width: "100%", marginTop: '20px' }}>
@@ -255,34 +284,42 @@ export default class CouponDetail extends Component {
                         </Form.Item>
                     </Form>
                 </Card>
-                <Card title="销售信息" bordered={false} style={{ width: "100%", marginTop: '20px' }}>
-                    <Form {...formItemLayout}
-                    >
-                        <Form.Item label="是否参与抢购活动">
-                            <div className={styles.show_textalign}>参与</div>
-                        </Form.Item>
-                        <Form.Item label="抢购时间">
-                            <div className={styles.show_textalign}>{data.rush_activity.start_time} - {data.rush_activity.end_time}</div>
-                        </Form.Item>
-                        <Form.Item label="抢购价">
-                            <div className={styles.show_textalign}>{data.rush_activity.rush_money}元</div>
-                        </Form.Item>
-                        <Form.Item label="抢购数量">
-                            <div className={styles.show_textalign}>50张</div>
-                        </Form.Item>
-                        <Form.Item label="限购设置">
-                            <div className={styles.show_textalign}>{data.rush_activity.rush_astrict_buy_num}人/张</div>
-                        </Form.Item>
-                    </Form>
-                </Card>
+
                 <Card title="礼品" bordered={false} style={{ width: "100%", marginTop: '20px' }}>
                     <Form {...formItemLayout}
                     >
                         <Form.Item wrapperCol={{ offset: 0 }} className={styles.show_margin}>
-                            <Table dataSource={giftDataSource} columns={giftColumns} pagination={false} />
+                            {
+                                data.rush_activity.bind_gift_log.length && <Table dataSource={data.rush_activity.bind_gift_log} columns={giftColumns} pagination={false} />
+                            }
                         </Form.Item>
                     </Form>
                 </Card>
+
+                <Modal
+                    title="卡券图片"
+                    visible={this.state.imgVisible}
+                    onOk={() => this.setState({ imgVisible: false, imgUrl: '' })}
+                    onCancel={() => this.setState({ imgVisible: false, imgUrl: '' })}
+                >
+                    <img className={styles.imgShow} src={'http://oss.tdianyi.com/' + this.state.imgUrl} />
+                </Modal>
+                <Modal
+                    title="主图视频"
+                    visible={this.state.videoVisible}
+                    onOk={() => this.setState({ videoVisible: false, videoUrl: '' })}
+                    onCancel={() => this.setState({ videoVisible: false, videoUrl: '' })}
+                >
+                    <video className={styles.imgShow} src={'http://oss.tdianyi.com/' + this.state.videoUrl} controls="controls" />
+                </Modal>
+                <Modal
+                    title="详情"
+                    visible={this.state.phoneVisible}
+                    onOk={() => this.setState({ phoneVisible: false })}
+                    onCancel={() => this.setState({ phoneVisible: false })}
+                >
+                    <div className={styles.phoneBox} dangerouslySetInnerHTML={{ __html: data.rush_activity.rush_detail_connent }} ></div>
+                </Modal>
             </div>
         )
     }

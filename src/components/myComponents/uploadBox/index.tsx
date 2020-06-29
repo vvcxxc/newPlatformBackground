@@ -31,8 +31,8 @@ function UploadBox(props: Props) {
     }
   }, [])
 
-  useEffect(()=> {
-    if(props.imgUrl){
+  useEffect(() => {
+    if (props.imgUrl) {
       setFile([{
         uid: '-1',
         name: 'image.png',
@@ -40,7 +40,7 @@ function UploadBox(props: Props) {
         url: 'http://tmwl.oss-cn-shenzhen.aliyuncs.com/' + props.imgUrl,
       }])
     }
-  },[props.imgUrl])
+  }, [props.imgUrl])
 
   // 随机数
   const randomString = (len: any) => {
@@ -67,10 +67,11 @@ function UploadBox(props: Props) {
 
   const imageChange = (info: any) => {
     let fileList = [...info.fileList];
-    console.log(fileList[0].type)
-    if(fileList[0].type != 'image/jpeg' && fileList[0].type != 'image/jpg' && fileList[0].type != 'image/png') {
-      notification.error({message: '请上传jpeg、jpg、png格式的图片'})
-      return
+    if (fileList.length) {
+      if (fileList[0].type != 'image/jpeg' && fileList[0].type != 'image/jpg' && fileList[0].type != 'image/png') {
+        notification.error({ message: '请上传jpeg、jpg、png格式的图片' })
+        return
+      }
     }
     if (info.file.status === 'uploading') {
       setLoading(true)

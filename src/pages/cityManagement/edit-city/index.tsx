@@ -119,6 +119,7 @@ export default class editCity extends Component {
             }
         }).then(res => {
             message.success('操作成功')
+            router.goBack()
         }).catch(err => {
         });
     }
