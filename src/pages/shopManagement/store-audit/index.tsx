@@ -144,8 +144,8 @@ export default Form.create()(
                     },
                     {
                         title: '门店电话',
-                        dataIndex: 'store_address',
-                        key: 'store_address',
+                        dataIndex: 'store_telephone',
+                        key: 'store_telephone',
                         width: 100
                     },
                     {
@@ -192,7 +192,7 @@ export default Form.create()(
                                         </FormItem>
                                     </Col>
                                     <Col md={5} sm={20}>
-                                        <FormItem label='手机号'>
+                                        <FormItem label='登录账号'>
                                             {getFieldDecorator('telephone', { initialValue: telephone })(
                                                 <Input placeholder="请输入" />,
                                             )}

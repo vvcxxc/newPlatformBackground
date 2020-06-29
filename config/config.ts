@@ -193,6 +193,11 @@ export default {
                   component: './shopManagement/add-shop'
                 },
                 {
+                  path: '/shopManagement/edit-shop',
+                  name: 'edit-shop',
+                  component: './shopManagement/edit-shop'
+                },
+                {
                   path: '/shopManagement/store-audit',
                   name: 'store-audit',
                   component: './shopManagement/store-audit'
