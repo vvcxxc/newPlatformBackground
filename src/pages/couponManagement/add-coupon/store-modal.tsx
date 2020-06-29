@@ -17,6 +17,9 @@ export default function StoreModal({ visible, onChange, onClose }: Props) {
   const [store_id, setStoreId] = useState(0)
   const [store_select_list, setStoreSelectList] = useState([])
 
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState()
+
 
   useEffect(()=>{
     getBusinessList().then(res => {
@@ -25,9 +28,10 @@ export default function StoreModal({ visible, onChange, onClose }: Props) {
       }
     })
 
-    getStoreList({page: 1}).then(res => {
+    getStoreList({page: 1,}).then(res => {
       if(res.data){
         setStoreList(res.data)
+        setTotal(res.meta.pagination.total)
       }
     })
   }, [])
@@ -47,6 +51,7 @@ export default function StoreModal({ visible, onChange, onClose }: Props) {
   const search = () => {
     getStoreList({store: name, business_district: business_id}).then(res => {
       setStoreList(res.data)
+      setTotal(res.meta.pagination.total)
     })
   }
 
@@ -56,6 +61,7 @@ export default function StoreModal({ visible, onChange, onClose }: Props) {
     getStoreList({page: 1}).then(res => {
       if(res.data){
         setStoreList(res.data)
+        setTotal(res.meta.pagination.total)
       }
     })
   }
@@ -84,7 +90,7 @@ export default function StoreModal({ visible, onChange, onClose }: Props) {
       dataIndex: 'facade_image',
       key: 'facade_image',
       render: (text: any, record: any) => {
-        return <img src={record.facade_image} style={{width: 50, height: 50}} />
+        return <img src={record.facade_image.includes('http') ? record.facade_image : 'http://oss.tdianyi.com/' + record.facade_image} style={{width: 50, height: 50}} />
       }
     },
     {
@@ -113,6 +119,17 @@ export default function StoreModal({ visible, onChange, onClose }: Props) {
       key: 'business_district_name',
     },
   ];
+
+
+  const pageChange = (pagination: any) => {
+    let {current } = pagination
+    getStoreList({page: current}).then(res => {
+      if(res.data){
+        setStoreList(res.data)
+      }
+    })
+    setPage(current)
+  }
 
 
 
@@ -163,6 +180,15 @@ export default function StoreModal({ visible, onChange, onClose }: Props) {
           columns={ownStoreColumns}
           dataSource={store_list}
           rowSelection={rowSelection}
+          onChange={pageChange}
+          pagination={{
+            current: page,
+            pageSize: 15,
+            total,
+            showTotal: () => {
+              return `共${total}条`;
+            },
+          }}
         />
 
       </Modal>

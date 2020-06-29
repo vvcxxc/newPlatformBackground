@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styles from './index.less'
-import { Upload, Icon, Modal } from 'antd'
+import { Upload, Icon, Modal, notification } from 'antd'
 import request from '@/utils/request';
 interface Props {
   imgUrl?: string;
@@ -31,8 +31,8 @@ function UploadBox(props: Props) {
     }
   }, [])
 
-  useEffect(()=> {
-    if(props.imgUrl){
+  useEffect(() => {
+    if (props.imgUrl) {
       setFile([{
         uid: '-1',
         name: 'image.png',
@@ -40,7 +40,7 @@ function UploadBox(props: Props) {
         url: 'http://tmwl.oss-cn-shenzhen.aliyuncs.com/' + props.imgUrl,
       }])
     }
-  },[props.imgUrl])
+  }, [props.imgUrl])
 
   // 随机数
   const randomString = (len: any) => {
@@ -67,6 +67,12 @@ function UploadBox(props: Props) {
 
   const imageChange = (info: any) => {
     let fileList = [...info.fileList];
+    if (fileList.length) {
+      if (fileList[0].type != 'image/jpeg' && fileList[0].type != 'image/jpg' && fileList[0].type != 'image/png') {
+        notification.error({ message: '请上传jpeg、jpg、png格式的图片' })
+        return
+      }
+    }
     if (info.file.status === 'uploading') {
       setLoading(true)
       // return;
@@ -137,6 +143,7 @@ function UploadBox(props: Props) {
         listType="picture-card"
         // showUploadList={false}
         fileList={fileList}
+        accept='image/*'
         onChange={imageChange}
         showUploadList={{ showDownloadIcon: false }}
         data={getData}

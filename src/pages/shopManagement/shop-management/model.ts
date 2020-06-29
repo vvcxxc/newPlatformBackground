@@ -2,6 +2,7 @@ const Model = {
     namespace: 'shopManagementList',
     state: {
         storeName: undefined, //门店名称
+        loginAccount: undefined, //登录账号
         categoryName: undefined, // 分类名称
         bussinessName: undefined, // 商圈名称
         currentPage: 1,
@@ -12,6 +13,7 @@ const Model = {
             return {
                 ...state,
                 storeName: payload.storeName,
+                loginAccount: payload.loginAccount,
                 categoryName: payload.categoryName,
                 bussinessName: payload.bussinessName,
                 currentPage: 1,
@@ -21,6 +23,7 @@ const Model = {
             return {
                 ...state,
                 storeName: undefined,
+                loginAccount: undefined,
                 categoryName: undefined,
                 bussinessName: undefined
             }

@@ -72,7 +72,7 @@ export default Form.create()(
 
     componentDidMount() {
       getOssDate().then(res => {
-        this.setState({ oss_data_data: res.data })
+        this.setState({ oss_data_data: res })
       })
       // 获取使用规则列表
       getRuleList().then(res => {
@@ -211,6 +211,7 @@ export default Form.create()(
     onOkSelectTime = (value: any,) => {
       let start_time = moment(value[0]).format('YYYY-MM-DD HH:mm')
       let end_time = moment(value[1]).format('YYYY-MM-DD HH:mm')
+      console.log(start_time,end_time)
       this.setState({ start_time, end_time })
     }
 
@@ -226,38 +227,26 @@ export default Form.create()(
         if (regex.test(value) && value <= 1000000 || value == '') {
           this.setState({ [type]: e.target.value })
         }
-        return
-      }
-
-      if (type == 'brokerage_ratio') { // 分佣比例
+      }else if (type == 'brokerage_ratio') { // 分佣比例
         if (regex1.test(value) && value <= 100 || value == '') {
           this.setState({ [type]: e.target.value })
         }
-        return
-      }
-
-      if (type == 'repertory_num') { // 抢购数量
+      }else if (type == 'repertory_num') { // 抢购数量
         if (regex1.test(value) || value == '') {
           this.setState({ [type]: e.target.value })
         }
-        return
-      }
-
-      if (type == 'rush_astrict_buy_num1') {
+      }else if (type == 'rush_astrict_buy_num1') {
         if (regex1.test(value) && value <= this.state.repertory_num || value == '') {
           this.setState({ [type]: e.target.value })
         }
-        return
-      }
-
-      if (type == 'name') { // 卡券名
+      }else if (type == 'name') { // 卡券名
         if (value.length <= 30) {
           this.setState({ [type]: e.target.value })
         }
-        return
+      }else{
+        this.setState({ [type]: e.target.value })
       }
 
-      this.setState({ [type]: e.target.value })
 
     }
 
@@ -317,20 +306,21 @@ export default Form.create()(
      * 限制时间
      */
     disabledRangeTime = (_: any, type: string) => {
-      if (type == 'start') {
-        let time = moment().format()
-        let hour = moment(time).get('hour')
-        let minute = moment(time).get('minute')
-        let new_minute = minute + 5
-        if (new_minute > 59) {
-          new_minute = new_minute - 59
-          hour = hour + 1
-        }
-        return {
-          disabledHours: () => this.range(0, 24).splice(0,hour),
-          disabledMinutes: () => this.range(0, 60).splice(0,new_minute),
-        }
+      if (type == 'start' && _ && moment().format('YYYY-MM-DD') == moment(_).format('YYYY-MM-DD')) {
 
+          console.log('3232')
+          let time = moment().format()
+          let hour = moment(time).get('hour')
+          let minute = moment(time).get('minute')
+          let new_minute = minute + 5
+          if (new_minute > 59) {
+            new_minute = new_minute - 59
+            hour = hour + 1
+          }
+          return {
+            disabledHours: () => this.range(0, 24).splice(0,hour),
+            disabledMinutes: () => this.range(0, 60).splice(0,new_minute),
+          }
       }
       return {}
     }
@@ -379,6 +369,18 @@ export default Form.create()(
         }
       })
     }
+
+    /**
+     * 删除礼品
+     */
+    deleteGift = (item: any) => {
+      let gift_id = JSON.parse(JSON.stringify(this.state.gift_id))
+      let gift_list = JSON.parse(JSON.stringify(this.state.gift_list))
+      gift_id = gift_id.filter((res: any) => res != item.id)
+      gift_list = gift_list.filter((res: any) => res.id != item.id)
+      this.setState({gift_id, gift_list})
+    }
+
 
 
 
@@ -480,35 +482,19 @@ export default Form.create()(
           align: 'center'
         },
         {
-          title: '使用门槛',
-          dataIndex: 'use_min_price',
-          key: 'use_min_price',
-          align: 'center'
-        },
-        {
-          title: '总库存(个)',
-          dataIndex: 'total_repertory_num',
-          key: 'total_repertory_num',
-          align: 'center'
-        },
-        {
           title: '剩余数量(个)',
           dataIndex: 'total_surplus_num',
           key: 'total_surplus_num',
           align: 'center'
         },
         {
-          title: '发放限制(人/个)',
-          dataIndex: 'each_num',
-          key: 'each_num',
+          title: '操作',
+          dataIndex: 'index',
+          render: (text: any, record: any, index: number) => {
+            return <Icon type="delete" onClick={this.deleteGift.bind(this, record)} />;
+          },
           align: 'center'
-        },
-        {
-          title: '有效期(天)',
-          dataIndex: 'validity_day',
-          key: 'validity_day',
-          align: 'center'
-        },
+        }
       ]
 
       const ownStoreColumns = [
@@ -517,7 +503,7 @@ export default Form.create()(
           dataIndex: 'facade_image',
           key: 'facade_image',
           render: (text: any, record: any) => {
-            return <img src={record.facade_image} style={{ width: 50, height: 50 }} />
+            return <img src={record.facade_image.includes('http') ? record.facade_image : 'http://oss.tdianyi.com/' + record.facade_image} style={{width: 50, height: 50}} />
           }
         },
         {
@@ -580,7 +566,7 @@ export default Form.create()(
               }
 
               <Form.Item label="抽佣比例">
-                <Input value={brokerage_ratio} type='number' onChange={this.handleChange.bind(this, 'brokerage_ratio')} suffix="%" />
+                <Input value={brokerage_ratio} onChange={this.handleChange.bind(this, 'brokerage_ratio')} suffix="%" />
                 <div style={{ fontSize: 12, width: 500, color: '#D9001B' }}>注：抽佣比例决定商家需要支付给平台的服务费。服务费=交易额*抽佣比例</div>
               </Form.Item>
             </Form>
@@ -598,9 +584,9 @@ export default Form.create()(
               }
 
               <Form.Item label="抢购价">
-                <Input value={rush_money} type='number' onChange={this.handleChange.bind(this, 'rush_money')} suffix="元" />
+                <Input value={rush_money} onChange={this.handleChange.bind(this, 'rush_money')} suffix="元" />
               </Form.Item>
-              <div>
+              <div className={styles.select_time}>
                 <Form.Item label="抢购时间">
                   <RangePicker
                     showTime={{ format: 'HH:mm',  defaultValue: [moment().add(6, 'm'), moment('11:59:59', 'HH:mm:ss')] }}
@@ -609,17 +595,17 @@ export default Form.create()(
                     format="YYYY-MM-DD HH:mm"
                     placeholder={['开始时间', '结束时间']}
                     onOk={this.onOkSelectTime}
-
                   />
+                  <div style={{ fontSize: 12, width: 500, color: '#D9001B' }}>注：抢购开始时间必须大于当前的时间</div>
                 </Form.Item>
                 <Form.Item label="抢购数量">
-                  <Input value={repertory_num} type='number' onChange={this.handleChange.bind(this, 'repertory_num')} suffix="张" />
+                  <Input value={repertory_num} onChange={this.handleChange.bind(this, 'repertory_num')} suffix="张" />
                 </Form.Item>
                 {
                   coupon_type === 2 ? (
                     <Form.Item label="使用门槛">
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        消费满<Input style={{ width: 300 }} type='number' value={use_min_price} onChange={this.handleChange.bind(this, 'use_min_price')} suffix="元" />可用
+                        消费满<Input style={{ width: 300 }} value={use_min_price} onChange={this.handleChange.bind(this, 'use_min_price')} suffix="元" />可用
                     </div>
                     </Form.Item>
                   ) : null
@@ -637,7 +623,7 @@ export default Form.create()(
                 <Form.Item label="有效期">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span>购券日起</span>
-                    <Input value={validity_day} type='number' onChange={this.handleChange.bind(this, 'validity_day')} style={{ width: "250px" }} />
+                    <Input value={validity_day} onChange={this.handleChange.bind(this, 'validity_day')} style={{ width: "250px" }} />
                     <span>天可用</span>
                   </div>
                 </Form.Item>
@@ -765,7 +751,7 @@ export default Form.create()(
 
           <StoreModal visible={is_show_store} onChange={this.storeChange} onClose={this.close} />
 
-          <GiftModal visible={is_show_gift} store={store_list[0] ? store_list[0] : null} onClose={this.close} onChange={this.giftChange} />
+          <GiftModal visible={is_show_gift} id={this.state.gift_id} store={store_list[0] ? store_list[0] : null} onClose={this.close} onChange={this.giftChange} />
 
 
         </div >

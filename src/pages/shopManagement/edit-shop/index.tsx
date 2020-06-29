@@ -10,7 +10,7 @@ import { add } from "lodash";
 
 const { Option } = Select;
 
-export default class storeAuditFailDetail extends Component {
+export default class EditShop extends Component {
 
     geocoder: any;
 
@@ -62,6 +62,7 @@ export default class storeAuditFailDetail extends Component {
             }
             this.setState({ location })
             this.geocoder.getAddress([location.longitude, location.latitude], (status: string, result: any) => {
+                console.log(result)
                 if (status === 'complete' && result.info === 'OK') {
                     // result为对应的地理位置详细信息
                     let address = result.regeocode.formattedAddress;
@@ -138,6 +139,7 @@ export default class storeAuditFailDetail extends Component {
         storeTel: "",
         storeEmail: "",
         bussinessType: "",
+        business_districts_id: "",
         storeImg: "",
         environmental_photo: [],
         bussinessImg: "",
@@ -151,14 +153,14 @@ export default class storeAuditFailDetail extends Component {
         IDName: "",
         IDNum: "",
         IDValidity: "",
-        isDefault: null,
+        // isDefault: null,
 
-        storeMsgFail: false,
-        storeFailSeason: "",
-        licenseMsgFail: false,
-        licenseFailSeason: "",
-        IDMsgFail: false,
-        IDFailSeason: "",
+        // storeMsgFail: false,
+        // storeFailSeason: "",
+        // licenseMsgFail: false,
+        // licenseFailSeason: "",
+        // IDMsgFail: false,
+        // IDFailSeason: "",
 
         bussinessDatas: [],
 
@@ -182,7 +184,7 @@ export default class storeAuditFailDetail extends Component {
         isSelcetDateLicense: 1,
         isSelcetDateID: 1,
 
-        storeType: null,
+        // storeType: null,
 
 
         city_list: [],
@@ -202,9 +204,7 @@ export default class storeAuditFailDetail extends Component {
         districtID: 0,
         districtName: "",
         all_city: [],
-        business_remarks: "",
-        identity_remarks: "",
-        store_remarks: "",
+
     }
 
 
@@ -220,15 +220,15 @@ export default class storeAuditFailDetail extends Component {
         })
     }
 
-    handleChangeIsDefault = (e) => {
-        this.setState({
-            isDefault: e.target.value,
-            storeMsgFail: false,
-            licenseMsgFail: false,
-            IDMsgFail: false,
-            storeType: null
-        })
-    }
+    // handleChangeIsDefault = (e) => {
+    //     this.setState({
+    //         isDefault: e.target.value,
+    //         storeMsgFail: false,
+    //         licenseMsgFail: false,
+    //         IDMsgFail: false,
+    //         storeType: null
+    //     })
+    // }
 
     /**随机数 */
     randomString = (len: any) => {
@@ -290,7 +290,7 @@ export default class storeAuditFailDetail extends Component {
         })
 
         const id = this.props.location.query.id;
-        request(`/admin/store/examines/${id}`, {
+        request(`/admin/stores/manage/${id}`, {
             method: 'GET',
         }).then(res => {
             this.state.categoryDatas.forEach(item => {
@@ -300,13 +300,19 @@ export default class storeAuditFailDetail extends Component {
                     })
                 }
             })
+            this.state.bussinessDatas.forEach(item => {
+                if (item.id == res.data.business_districts_id) {
+                    this.setState({
+                        business_districts_id: item.id
+                    })
+                }
+            })
             this.setState({
                 storeName: res.data.store_name,
                 storeAddress: res.data.store_address,
                 detailAddress: res.data.store_address_info,
                 storeTel: res.data.store_telephone,
                 storeEmail: res.data.email,
-                // bussinessType: res.data.category_id,
                 storeImg: res.data.door_photo,
                 environmental_photo: res.data.environmental_photo,
                 bussinessImg: res.data.business_license_photo,
@@ -326,9 +332,6 @@ export default class storeAuditFailDetail extends Component {
                 provinceID: res.data.province_id,
                 cityID: res.data.city_id,
                 districtID: res.data.county_id,
-                business_remarks: res.data.business_remarks,
-                identity_remarks: res.data.identity_remarks,
-                store_remarks: res.data.store_remarks
             })
         })
 
@@ -347,6 +350,12 @@ export default class storeAuditFailDetail extends Component {
     handleChangeSelectCategory = (e) => {
         this.setState({
             bussinessType: e
+        })
+    }
+
+    handleChangeSelectBusiness = (e) => {
+        this.setState({
+            business_districts_id: e
         })
     }
 
@@ -599,24 +608,17 @@ export default class storeAuditFailDetail extends Component {
     handleSubmit = () => {
         console.log(this.state);
         const {
-            isDefault,
             isSelcetDateLicense,
             validity,
             isSelcetDateID,
             IDValidity,
-            storeMsgFail,
-            licenseMsgFail,
-            IDMsgFail,
-            storeFailSeason,
-            licenseFailSeason,
-            IDFailSeason,
-            storeType,
             storeName,
             storeAddress,
             detailAddress,
             storeTel,
             storeEmail,
             bussinessType,
+            business_districts_id,
             storeImg,
             environmental_photo,
             bussinessImg,
@@ -634,7 +636,7 @@ export default class storeAuditFailDetail extends Component {
             districtID
         } = this.state;
         if (storeName == "" || storeAddress == "" || detailAddress == "" || storeTel == "" || storeEmail == "" || bussinessType == ""
-            || storeImg == "" || environmental_photo.length != 2 || bussinessImg == "" || registerNum == "" || licenseName == "" || legalPersonName == ""
+            || business_districts_id == "" || storeImg == "" || environmental_photo.length != 2 || bussinessImg == "" || registerNum == "" || licenseName == "" || legalPersonName == ""
             || identity_card_positive_image == "" || identity_card_opposite_image == "" || identity_card_handheld_image == "" || IDName == "" || IDNum == ""
         ) {
             message.error('请填写完整资料'); return;
@@ -645,29 +647,6 @@ export default class storeAuditFailDetail extends Component {
         if (isSelcetDateID == 1 && IDValidity == "") {
             message.error('请选择身份证有效期'); return;
         }
-        if (isDefault == null) {
-            message.error('请选择审核结果'); return;
-        }
-        if (isDefault == 0) {
-            if (!storeMsgFail && !licenseMsgFail && !IDMsgFail) {
-                message.error('请选择失败类型'); return;
-            }
-            if (storeMsgFail && storeFailSeason == "") {
-                message.error('请填写失败原因'); return;
-            }
-            if (licenseMsgFail && licenseFailSeason == "") {
-                message.error('请填写失败原因'); return;
-            }
-            if (IDMsgFail && IDFailSeason == "") {
-                message.error('请填写失败原因'); return;
-            }
-        }
-        if (isDefault == 1) {
-            if (storeType == null) {
-                message.error('请选择商圈'); return;
-            }
-        }
-
 
         let data = {
             store_name: storeName,
@@ -678,6 +657,7 @@ export default class storeAuditFailDetail extends Component {
             store_telephone: storeTel,
             email: storeEmail,
             category_id: bussinessType,
+            business_districts_id,
             door_photo: storeImg,
             environmental_photo,
             business_license_photo: bussinessImg,
@@ -691,7 +671,6 @@ export default class storeAuditFailDetail extends Component {
             identity_name: IDName,
             identity_card: IDNum,
             is_identity_card_long_time: isSelcetDateID == 1 ? 0 : 1,
-            examine_type: isDefault == 1 ? 3 : 4,
             province_id: provinceID,
             city_id: cityID,
             county_id: districtID
@@ -702,37 +681,9 @@ export default class storeAuditFailDetail extends Component {
         if (isSelcetDateID == 1) {
             data.identity_card_valid_until = IDValidity;
         }
-        if (isDefault == 1) {
-            data.business_districts_id = storeType;
-            data.store_type = 3;
-            data.business_type = 3;
-            data.identity_type = 3;
-        } else if (isDefault == 0) {
-            if (storeMsgFail) {
-                data.store_type = 4;
-                data.store_remarks = storeFailSeason;
-            } else {
-                data.store_type = 3;
-            }
-
-            if (licenseMsgFail) {
-                data.business_type = 4;
-                data.business_remarks = licenseFailSeason;
-            } else {
-                data.business_type = 3;
-            }
-
-            if (IDMsgFail) {
-                data.identity_type = 4;
-                data.identity_remarks = IDFailSeason;
-            } else {
-                data.identity_type = 3;
-            }
-
-        }
 
         const id = this.props.location.query.id;
-        request(`/admin/store/audit/${id}`, {
+        request(`/admin/stores/manage/${id}`, {
             method: 'PUT',
             data,
         }).then(res => {
@@ -759,6 +710,7 @@ export default class storeAuditFailDetail extends Component {
             storeTel,
             storeEmail,
             bussinessType,
+            business_districts_id,
             storeImg,
             environmental_photo,
             bussinessImg,
@@ -772,21 +724,18 @@ export default class storeAuditFailDetail extends Component {
             IDName,
             IDNum,
             IDValidity,
-            isDefault,
-            storeMsgFail,
-            licenseMsgFail,
-            IDMsgFail,
+            // isDefault,
+            // storeMsgFail,
+            // licenseMsgFail,
+            // IDMsgFail,
             bussinessDatas,
             categoryDatas,
             oss_data,
             isSelcetDateLicense,
             isSelcetDateID,
-            storeFailSeason,
-            licenseFailSeason,
-            IDFailSeason,
-            store_remarks,
-            business_remarks,
-            identity_remarks
+            // storeFailSeason,
+            // licenseFailSeason,
+            // IDFailSeason
         } = this.state;
         const uploadButtonStoreImg = (
             <div className={styles.uploadDefault}>
@@ -832,28 +781,9 @@ export default class storeAuditFailDetail extends Component {
         );
         return (
             <div>
-                <Card title="门店信息" bordered={false} style={{ width: "100%" }} extra={
-                    store_remarks ? (
-                        <span style={{ "color": "#D9001B" }}>审核失败</span>
-                    ) : (
-                            <span style={{ "color": "#70B603" }}>审核成功</span>
-                        )
-
-                }>
+                <Card title="门店信息" bordered={false} style={{ width: "100%" }}>
                     <Form {...formItemLayout}
                     >
-                        {
-                            store_remarks ? (
-                                <div style={{ width: '100%', background: "rgba(236, 128, 141, 0.972549019607843)" }}>
-                                    <Form.Item wrapperCol={{ offset: 1 }} style={{ marginBottom: '-10px' }}>
-                                        <div style={{ fontWeight: "bold" }}>审核失败</div>
-                                    </Form.Item>
-                                    <Form.Item wrapperCol={{ offset: 1 }}>
-                                        <div>原因：{store_remarks}</div>
-                                    </Form.Item>
-                                </div>
-                            ) : ""
-                        }
                         <Form.Item label="门店名称">
                             <Input value={storeName} onChange={this.handleChangeInp.bind(this, 'storeName')} />
                         </Form.Item>
@@ -866,9 +796,6 @@ export default class storeAuditFailDetail extends Component {
                         <Form.Item label="详细地址">
                             <Input value={detailAddress} onChange={this.handleChangeInp.bind(this, 'detailAddress')} />
                         </Form.Item>
-                        {/* <Form.Item label="门牌号">
-                            <Input value={storeNum} readOnly />
-                        </Form.Item> */}
                         <Form.Item label="门店电话">
                             <Input value={storeTel} onChange={this.handleChangeInp.bind(this, 'storeTel')} />
                         </Form.Item>
@@ -876,7 +803,6 @@ export default class storeAuditFailDetail extends Component {
                             <Input value={storeEmail} onChange={this.handleChangeInp.bind(this, 'storeEmail')} />
                         </Form.Item>
                         <Form.Item label="经营品类">
-                            {/* <Input value={bussinessType} onChange={this.handleChangeInp.bind(this, 'bussinessType')} /> */}
                             <Select
                                 placeholder="请选择"
                                 style={{
@@ -892,8 +818,23 @@ export default class storeAuditFailDetail extends Component {
                                 }
                             </Select>
                         </Form.Item>
+                        <Form.Item label="所属商圈">
+                            <Select
+                                placeholder="请选择"
+                                style={{
+                                    width: '100%',
+                                }}
+                                onChange={this.handleChangeSelectBusiness}
+                                value={business_districts_id}
+                            >
+                                {
+                                    bussinessDatas.map(item => (
+                                        <Option value={item.id}>{item.name}</Option>
+                                    ))
+                                }
+                            </Select>
+                        </Form.Item>
                         <Form.Item label="门头图片">
-                            {/* <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + storeImg} width="150px" height="150px" /> */}
                             <Upload
                                 style={{ width: '150px', height: '150px' }}
                                 listType="picture-card"
@@ -916,11 +857,6 @@ export default class storeAuditFailDetail extends Component {
                                 sm: { span: 6 },
                             }
                         }>
-                            {/* {
-                                environmental_photo.map(item => (
-                                    <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + item} alt="" width="150" height="150" style={{ marginRight: 10 }} />
-                                ))
-                            } */}
                             <div style={{ display: 'flex' }}>
                                 <Upload
                                     style={{ width: '150px', height: '150px' }}
@@ -961,35 +897,15 @@ export default class storeAuditFailDetail extends Component {
                     </Form>
                 </Card>
 
-                <Card title="营业执照备案" bordered={false} style={{ width: "100%", marginTop: "20px" }} extra={
-                    business_remarks ? (
-                        <span style={{ "color": "#D9001B" }}>审核失败</span>
-                    ) : (
-                            <span style={{ "color": "#70B603" }}>审核成功</span>
-                        )
-
-                }>
+                <Card title="营业执照备案" bordered={false} style={{ width: "100%", marginTop: "20px" }}>
                     <Form {...formItemLayout}
                     >
-                        {
-                            business_remarks ? (
-                                <div style={{ width: '100%', background: "rgba(236, 128, 141, 0.972549019607843)" }}>
-                                    <Form.Item wrapperCol={{ offset: 1 }} style={{ marginBottom: '-10px' }}>
-                                        <div style={{ fontWeight: "bold" }}>审核失败</div>
-                                    </Form.Item>
-                                    <Form.Item wrapperCol={{ offset: 1 }}>
-                                        <div>原因：{business_remarks}</div>
-                                    </Form.Item>
-                                </div>
-                            ) : ""
-                        }
                         <Form.Item label="营业执照" wrapperCol={
                             {
                                 xs: { span: 6 },
                                 sm: { span: 6 },
                             }
                         }>
-                            {/* <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + bussinessImg} width="350px" height="180px" /> */}
                             <Upload
                                 style={{ width: '350px', height: '180px' }}
                                 listType="picture-card"
@@ -1032,37 +948,15 @@ export default class storeAuditFailDetail extends Component {
                     </Form>
                 </Card>
 
-                <Card title="法人身份证信息" bordered={false} style={{ width: "100%", marginTop: "20px" }} extra={
-                    identity_remarks ? (
-                        <span style={{ "color": "#D9001B" }}>审核失败</span>
-                    ) : (
-                            <span style={{ "color": "#70B603" }}>审核成功</span>
-                        )
-
-                }>
+                <Card title="法人身份证信息" bordered={false} style={{ width: "100%", marginTop: "20px" }}>
                     <Form {...formItemLayout}
                     >
-                        {
-                            identity_remarks ? (
-                                <div style={{ width: '100%', background: "rgba(236, 128, 141, 0.972549019607843)" }}>
-                                    <Form.Item wrapperCol={{ offset: 1 }} style={{ marginBottom: '-10px' }}>
-                                        <div style={{ fontWeight: "bold" }}>审核失败</div>
-                                    </Form.Item>
-                                    <Form.Item wrapperCol={{ offset: 1 }}>
-                                        <div>原因：{identity_remarks}</div>
-                                    </Form.Item>
-                                </div>
-                            ) : ""
-                        }
                         <Form.Item label="身份证照片" wrapperCol={
                             {
                                 xs: { span: 8 },
                                 sm: { span: 8 },
                             }
                         }>
-                            {/* <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + identity_card_positive_image} width="150px" height="150px" style={{ marginRight: '10px' }} />
-                            <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + identity_card_opposite_image} width="150px" height="150px" style={{ marginRight: '10px' }} />
-                            <img src={`http://tmwl.oss-cn-shenzhen.aliyuncs.com/` + identity_card_handheld_image} width="150px" height="150px" /> */}
                             <div style={{ display: 'flex' }}>
                                 <Upload
                                     style={{ width: '150px', height: '150px' }}
@@ -1117,9 +1011,6 @@ export default class storeAuditFailDetail extends Component {
                         <Form.Item label="身份证号">
                             <Input value={IDNum} onChange={this.handleChangeInp.bind(this, 'IDNum')} />
                         </Form.Item>
-                        {/* <Form.Item label="有效期">
-                            <Input value={IDValidity} onChange={this.handleChangeInp.bind(this, 'IDValidity')} />
-                        </Form.Item> */}
                         <Form.Item label="有效期">
                             <Radio.Group value={isSelcetDateID} onChange={this.handleSelectDateID}>
                                 <Radio value={1}>选择日期</Radio>
@@ -1133,10 +1024,14 @@ export default class storeAuditFailDetail extends Component {
                                 </Form.Item>
                             ) : ""
                         }
+                        <Form.Item wrapperCol={{ offset: 2 }}>
+                            <Button type="primary" onClick={this.handleSubmit}>提交</Button>
+                        </Form.Item>
                     </Form>
+
                 </Card>
 
-                <Card title="门店审核" bordered={false} style={{ width: "100%", marginTop: "20px" }}>
+                {/* <Card title="门店审核" bordered={false} style={{ width: "100%", marginTop: "20px" }}>
                     <Form {...formItemLayout}
                     >
                         <Form.Item label="审核结果">
@@ -1211,12 +1106,12 @@ export default class storeAuditFailDetail extends Component {
                             <Button type="primary" onClick={this.handleSubmit}>提交</Button>
                         </Form.Item>
                     </Form>
-                </Card>
+                </Card> */}
 
 
                 <Modal
                     className={styles.mapModal}
-                    title="Basic Modal"
+                    title="请选择门店地址"
                     visible={this.state.mapShow}
                     onOk={() => { this.setState({ mapShow: false, storeAddress: this.state.map_address }) }}
                     onCancel={() => { this.setState({ mapShow: false }) }}

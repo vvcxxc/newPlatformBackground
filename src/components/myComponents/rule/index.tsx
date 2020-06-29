@@ -95,6 +95,7 @@ export default function Rule({label, onChange}: Props) {
     for(let i in arr){
       arr[i].index = Number(i)+1
     }
+    setIndex(index + 1)
     setContent('')
     setRuleList(arr)
     onChange(arr)
@@ -104,7 +105,9 @@ export default function Rule({label, onChange}: Props) {
   const handleDelete = (item: any) => {
     let arr = rule_list.filter((res: any)=> res.id != item.id)
     if(item.is_add){
+      console.log(item,add_list)
       let add = add_list.filter((res: any)=> res.id != item.id)
+      console.log(add)
       setAddList(add)
     }else {
       let select = select_rows.filter((res: any)=> res.id != item.id)
