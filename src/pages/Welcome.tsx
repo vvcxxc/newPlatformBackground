@@ -60,6 +60,6 @@ export default (): React.ReactNode => (
   //   </p>
   // </PageHeaderWrapper>
   <div>
-    新平台管理后台
+    小熊敬礼管理平台
   </div>
 );
