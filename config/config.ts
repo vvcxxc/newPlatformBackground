@@ -234,6 +234,11 @@ export default {
                   component: './giftManagement/gift-list',
                 },
                 {
+                  path: '/giftManagement/platform-gift-list',
+                  name: 'platform-gift-list',
+                  component: './giftManagement/platform-gift-list',
+                },
+                {
                   path: '/giftManagement/gift-post',
                   name: 'gift-post',
                   component: './giftManagement/gift-post',

@@ -1,18 +1,34 @@
 const Model = {
-    namespace: 'giftList',
-    state: {
-        currentPage: 1,
-        currentPageSize: 10
+  namespace: 'businessGiftList',
+  state: {
+    page: 1,
+    gift_name: '',
+    gift_type: '',
+    is_terrace: 0,
+    business_district_id: '',
+    store_name: ''
+
+  },
+  reducers: {
+    setDate (state: any, {payload}: any){
+      console.log(payload)
+      return {
+        ...state,
+        ...payload
+      }
     },
-    reducers: {
-        setPaginationCurrent(state: any, action: any) {
-            return {
-                ...state,
-                currentPage: action.payload.currentPage,
-                currentPageSize: action.payload.currentPageSize,
-            };
-        },
+    reset (){
+      console.log(4343)
+      return {
+        page: 1,
+        gift_name: '',
+        gift_type: '',
+        is_terrace: 0,
+        business_district_id: '',
+        store_name: ''
+      }
     }
+  },
 }
 
 export default Model;

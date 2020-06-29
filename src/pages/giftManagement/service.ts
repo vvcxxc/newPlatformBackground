@@ -35,4 +35,14 @@ export const changeGiftNum = (gift_id: string | number, add_repertory_num: strin
   return request.put('/admin/gift/' + gift_id + '/updateRepertory', { data: { gift_id, add_repertory_num } })
 }
 
+/**
+ * 获取商圈
+ */
+export const getBusinessList = () =>
+  request.get('/admin/business/list/all')
 
+  /**
+   * 礼品列表
+   */
+export const getGiftList = (params: any) =>
+  request.get('/admin/gift',{params})
