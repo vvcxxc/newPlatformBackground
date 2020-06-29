@@ -207,7 +207,7 @@ export default Form.create()(
                         width: 100,
                         render: (text: any, record: any) => (
                             <div>
-                                <a >详情</a>
+                                <a onClick={() => router.push('/couponManagement/coupon-detail?id=' + record.id)} >详情</a>
                                 <Divider type="vertical" />
                                 <a >订单明细</a>
                             </div>
