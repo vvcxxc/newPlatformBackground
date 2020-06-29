@@ -109,7 +109,7 @@ export default class GiftDetails extends Component {
         title: '商家名称',
         dataIndex: 'supplier',
         key: 'supplier',
-        render: (text: any, record: any) => (<span>{record.supplier.name}</span>)//测试，不一定可以
+        render: (text: any, record: any) => (<span>{record.binging_store.name}</span>)//测试，不一定可以
       },
       {
         title: '绑定类型',
@@ -275,7 +275,8 @@ export default class GiftDetails extends Component {
                   <div className={styles.remaining_btn} onClick={() => { this.setState({ visible: true }) }}>添加库存</div>
                 </div>
                 <div className={styles.item_labe_table}>
-                  <Table
+                  {
+                    dataList ? <Table
                     rowKey="id"
                     columns={columns}
                     dataSource={dataList}
@@ -291,7 +292,9 @@ export default class GiftDetails extends Component {
                         return `共${total}条`;
                       },
                     }}
-                  />
+                  /> : null
+                  }
+
                 </div>
               </div>
             </div>

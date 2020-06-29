@@ -124,8 +124,13 @@ const BasicLayout: React.FC<BasicLayoutProps> = props => {
       children: [
         {
           path: '/giftManagement/gift-list',
-          name: '礼品列表',
+          name: '商圈礼品列表',
           component: './giftManagement/gift-list'
+        },
+        {
+          path: '/giftManagement/platform-gift-list',
+          name: '平台礼品列表',
+          component: './giftManagement/platform-gift-list'
         },
         {
           path: '/giftManagement/gift-post',

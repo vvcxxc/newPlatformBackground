@@ -90,7 +90,7 @@ export default Form.create()(
         const {rule} = this.state
         request.post('/admin/couponDescription',{data:{content: rule, is_show: 1, show_sort: 0}}).then(res => {
           if(res.data){
-            notification.success({message: '添加城市'})
+            notification.success({message: '添加成功'})
             this.setState({is_show: false})
             const { useKnow, currentPage, currentPageSize } = this.props.useKnowList;
             this.getListData(currentPage, currentPageSize, useKnow);
