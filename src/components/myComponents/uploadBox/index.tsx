@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styles from './index.less'
-import { Upload, Icon, Modal } from 'antd'
+import { Upload, Icon, Modal, notification } from 'antd'
 import request from '@/utils/request';
 interface Props {
   imgUrl?: string;
@@ -67,6 +67,11 @@ function UploadBox(props: Props) {
 
   const imageChange = (info: any) => {
     let fileList = [...info.fileList];
+    console.log(fileList[0].type)
+    if(fileList[0].type != 'image/jpeg' && fileList[0].type != 'image/jpg' && fileList[0].type != 'image/png') {
+      notification.error({message: '请上传jpeg、jpg、png格式的图片'})
+      return
+    }
     if (info.file.status === 'uploading') {
       setLoading(true)
       // return;
@@ -137,6 +142,7 @@ function UploadBox(props: Props) {
         listType="picture-card"
         // showUploadList={false}
         fileList={fileList}
+        accept='image/*'
         onChange={imageChange}
         showUploadList={{ showDownloadIcon: false }}
         data={getData}
