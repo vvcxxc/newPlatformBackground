@@ -159,7 +159,7 @@ export default Form.create()(
                   <Col md={5} sm={20}>
                     <FormItem label='使用须知'>
                       {getFieldDecorator('useKnow', { initialValue: useKnow })(
-                        <Input placeholder="请输入" />,
+                        <Input placeholder="请输入" />
                       )}
                     </FormItem>
                   </Col>
@@ -177,7 +177,7 @@ export default Form.create()(
                                     </Button>
 
                   </Col>
-                  <Col>
+                  <Col md={5} sm={26}>
                     <Button
                       type="primary"
                       style={{
