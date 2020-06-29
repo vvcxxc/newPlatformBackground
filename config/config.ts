@@ -178,6 +178,11 @@ export default {
                   component: './shopManagement/shop-category-management',
                 },
                 {
+                  path: '/shopManagement/edit-shop-category-management',
+                  name: 'edit-shop-category-management',
+                  component: './shopManagement/edit-shop-category-management',
+                },
+                {
                   path: '/shopManagement/add-cate',
                   name: 'add-cate',
                   component: './shopManagement/add-cate',

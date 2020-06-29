@@ -117,7 +117,7 @@ export default Form.create()(
                         width: 100,
                         render: (text: any, record: any) => (
                             <span>
-                                <a>编辑</a>
+                                <a onClick={() => router.push(`/shopManagement/edit-shop-category-management?id=${record.id}`)}>编辑</a>
                             </span>
                         )
                     },
