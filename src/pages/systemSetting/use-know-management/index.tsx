@@ -1,11 +1,12 @@
 import React, { Component } from "react";
 import styles from './index.less'
 import request from '@/utils/request';
-import { Row, Col, Form, Input, DatePicker, Button, Select, Table, Modal, Divider, notification } from 'antd'
+import { Row, Col, Form, Input, DatePicker, Button, Select, Table, Modal, Divider, notification, message } from 'antd'
 import { connect } from "dva";
 import { router } from "umi";
 
 const FormItem = Form.Item;
+const { confirm } = Modal;
 
 interface Props {
   form: any;
@@ -22,7 +23,11 @@ export default Form.create()(
         loading: false,
         total: 10,
         is_show: false,
-        rule: ''
+        rule: '',
+
+        is_edit_show: false,
+        editRule: "",
+        dataRecord: {}
       }
 
 
@@ -87,11 +92,23 @@ export default Form.create()(
       }
 
       handleOk = () => {
-        const {rule} = this.state
-        request.post('/admin/couponDescription',{data:{content: rule, is_show: 1, show_sort: 0}}).then(res => {
-          if(res.data){
-            notification.success({message: '添加成功'})
-            this.setState({is_show: false})
+        const { rule } = this.state
+        request.post('/admin/couponDescription', { data: { content: rule, is_show: 1, show_sort: 0 } }).then(res => {
+          if (res.data) {
+            notification.success({ message: '添加成功' })
+            this.setState({ is_show: false })
+            const { useKnow, currentPage, currentPageSize } = this.props.useKnowList;
+            this.getListData(currentPage, currentPageSize, useKnow);
+          }
+        })
+      }
+
+      handleEditOk = () => {
+        const { editRule, dataRecord } = this.state
+        request.put(`/admin/couponDescription/${dataRecord.id}`, { data: { content: editRule, is_show: 1, show_sort: 0 } }).then(res => {
+          if (res.data) {
+            notification.success({ message: '编辑成功' })
+            this.setState({ is_edit_show: false, editRule: "" })
             const { useKnow, currentPage, currentPageSize } = this.props.useKnowList;
             this.getListData(currentPage, currentPageSize, useKnow);
           }
@@ -100,9 +117,51 @@ export default Form.create()(
 
       inputChange = (e: any) => {
         const value = e.target.value
-        if(value.length <= 50){
-          this.setState({rule: value})
+        if (value.length <= 50) {
+          this.setState({ rule: value })
         }
+      }
+
+      inputEditChange = (e: any) => {
+        const value = e.target.value
+        if (value.length <= 50) {
+          this.setState({ editRule: value })
+        }
+      }
+
+      handleStatus = (record: any) => {
+        console.log(record)
+        let _this = this;
+        let status = record.is_show == 1 ? "禁用" : "启用";
+        confirm({
+          title: '操作',
+          content: `确定要该${status}须知吗?`,
+          okText: '确定',
+          okType: 'danger',
+          cancelText: '取消',
+          onOk() {
+            request(`/admin/couponDescription/${record.id}`, {
+              method: 'PUT',
+              data: {
+                content: record.content,
+                is_show: record.is_show == 1 ? 0 : 1,
+                show_sort: record.show_sort
+              }
+            }).then(res => {
+              message.success('操作成功');
+              const { useKnow, currentPage, currentPageSize } = _this.props.useKnowList;
+              _this.getListData(currentPage, currentPageSize, useKnow);
+            })
+          },
+          onCancel() {
+            console.log('Cancel');
+          },
+        });
+      }
+
+
+      handleEdit = (record: any) => {
+        this.setState({ is_edit_show: true, dataRecord: record })
       }
 
       render() {
@@ -138,9 +197,9 @@ export default Form.create()(
             width: 100,
             render: (text: any, record: any) => (
               <div>
-                <a>{record.is_show == 1 ? "禁用" : "启用"}</a>
+                <a onClick={this.handleStatus.bind(this, record)}>{record.is_show == 1 ? "禁用" : "启用"}</a>
                 <Divider type="vertical" />
-                <a>编辑</a>
+                <a onClick={this.handleEdit.bind(this, record)}>编辑</a>
               </div>
             )
           },
@@ -214,11 +273,20 @@ export default Form.create()(
               title="添加使用须知"
               visible={this.state.is_show}
               onOk={this.handleOk}
-              onCancel={()=> this.setState({is_show: false})}
+              onCancel={() => this.setState({ is_show: false })}
             >
               <Input placeholder='最多50字' value={this.state.rule} onChange={this.inputChange} />
             </Modal>
-          </div>
+
+            <Modal
+              title="编辑使用须知"
+              visible={this.state.is_edit_show}
+              onOk={this.handleEditOk}
+              onCancel={() => this.setState({ is_edit_show: false })}
+            >
+              <Input placeholder='最多50字' value={this.state.editRule} onChange={this.inputEditChange} />
+            </Modal>
+          </div >
         )
       }
     }
