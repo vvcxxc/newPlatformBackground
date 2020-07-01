@@ -4,7 +4,9 @@ import request from '@/utils/request';
 import { Row, Col, Form, Input, DatePicker, Button, Select, Table, Modal, Upload, Icon, Card, Radio, Cascader } from 'antd'
 import { connect } from "dva";
 import { router } from "umi";
+import moment from 'moment'
 import { Map, Marker, MouseTool } from 'react-amap';
+import Item from "antd/lib/list/Item";
 
 const { Option } = Select;
 
@@ -64,7 +66,36 @@ export default class AddShop extends Component {
                 if (status === 'complete' && result.info === 'OK') {
                     // result为对应的地理位置详细信息
                     let address = result.regeocode.formattedAddress;
-                    this.setState({ map_address: address })
+                    let provinceName = result.regeocode.addressComponent.province;
+                    let cityName = result.regeocode.addressComponent.city;
+                    let districtName = result.regeocode.addressComponent.district;
+                    this.setState({ storeAddress: provinceName + cityName + districtName + address }, () => {
+                        let list = this.state.city_list;
+
+                        for (let i in list) {
+                            if (list[i].name == provinceName) {
+                                this.setState({
+                                    provinceID: list[i].id
+                                })
+                                let city = list[i].city;
+                                for (let a in city) {
+                                    if (city[a].name == cityName) {
+                                        this.setState({
+                                            cityID: city[a].id
+                                        })
+                                    }
+                                    let county = city[a].district;
+                                    for (let b in county) {
+                                        if (county[b].name == districtName) {
+                                            this.setState({
+                                                districtID: county[b].id
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    })
                 }
             })
         }
@@ -73,6 +104,11 @@ export default class AddShop extends Component {
 
 
     state = {
+        categoryDatas: [],
+        businessDatas: [],
+        categoryDatasId: undefined,
+        businessDatasId: undefined,
+
         mapShow: false,
 
         storeName: "",
@@ -106,6 +142,7 @@ export default class AddShop extends Component {
         saleName: "",
         saleOwn: "",
         SaleValidate: 0,
+        SaleValidateString: '',
 
         loadingIDFirst: false,
         imageUrlIDFirst: "",
@@ -122,10 +159,12 @@ export default class AddShop extends Component {
         userName: "",
         userIDCard: "",
         userIDValidate: 0,
+        userIDValidateString: '',
 
         city_list: [],
-        city_id: [],
-        map_address: '',
+        provinceID: 0,
+        cityID: 0,
+        districtID: 0,
         location: [0, 0]
     }
 
@@ -147,6 +186,7 @@ export default class AddShop extends Component {
             });
         });
         this.getCity();
+        this.getType();
     }
     getCity = () => {
         request.get('/json/regions').then(res => {
@@ -156,6 +196,22 @@ export default class AddShop extends Component {
             let c = b.replace(/city/g, "children")
             let d = c.replace(/district/g, "children")
             this.setState({ city_list: JSON.parse(d) })
+        })
+    }
+    getType = () => {
+        request.get('/admin/business/list/all', {
+            method: 'GET'
+        }).then(res => {
+            this.setState({
+                businessDatas: res.data
+            })
+        })
+        request('/admin/store/category', {
+            method: 'GET'
+        }).then(res => {
+            this.setState({
+                categoryDatas: res.data
+            })
         })
     }
     handleChange = (type, e) => {
@@ -316,8 +372,10 @@ export default class AddShop extends Component {
         })
     }
 
-    handleChangeSaleDate = () => {
-
+    handleChangeSaleDate = (query: any) => {
+        this.setState({
+            SaleValidateString: moment(query).format('YYYY-MM-DD')
+        })
     }
 
     // 上传身份证图片1
@@ -422,7 +480,73 @@ export default class AddShop extends Component {
         })
     }
 
-    handleChangeIDDate = () => {
+    handleChangeIDDate = (query: any) => {
+        this.setState({
+            userIDValidateString: moment(query).format('YYYY-MM-DD')
+        })
+    }
+
+    handleChangeSelcetMap = (e, v) => {
+        let address = "";
+        v.forEach(item => {
+            address += item.label;
+        })
+        console.log(address);
+        this.geocoder = new AMap.Geocoder({});
+        this.geocoder.getLocation(address, (status, result) => {
+            console.log(status, result)
+            if (status === 'complete') {
+                this.setState({
+                    location: {
+                        longitude: result.geocodes[0].location.lng,
+                        latitude: result.geocodes[0].location.lat,
+                        provinceName: result.geocodes[0].addressComponent.province,
+                        cityName: result.geocodes[0].addressComponent.city,
+                        districtName: result.geocodes[0].addressComponent.district
+                    },
+                    map_address: ""
+                })
+            }
+
+        })
+    }
+
+    sumbit = () => {
+        console.log(this.state);
+
+        const {
+            storeName,
+            storeAddress,
+            storeDetailAddress,
+            storeTelephone,
+            storeEmail,
+            categoryDatasId,
+            businessDatasId,
+
+            cover_image_StoreHead,
+            cover_image_EnvironmentalFirst,
+            cover_image_EnvironmentalSecond,
+            cover_image_Sale,
+            registerNum,
+            saleName,
+            saleOwn,
+            SaleValidate,//0永久 1选择
+            SaleValidateString,
+            cover_image_IDFirst,
+            cover_image_IDSecond,
+            cover_image_IDThird,
+            userName,
+            userIDCard,
+            userIDValidate,//0永久 1选择
+            userIDValidateString,
+
+            provinceID,
+            cityID,
+            districtID,
+            location,
+        } = this.state;
+
+
 
     }
 
@@ -526,21 +650,33 @@ export default class AddShop extends Component {
                         <Form.Item label="经营品类">
                             <Select
                                 placeholder="请选择"
+                                onChange={(value: any, option: any) => this.setState({ categoryDatasId: value })}
+                                value={this.state.categoryDatasId}
                                 style={{
                                     width: '100%',
                                 }}
                             >
-                                <Option value="0">餐饮</Option>
+                                {
+                                    this.state.categoryDatas.map((item: any, index: any) => {
+                                        return (<Option key={item.id} value={item.id}>{item.name}</Option>)
+                                    })
+                                }
                             </Select>
                         </Form.Item>
                         <Form.Item label="所属商圈">
                             <Select
                                 placeholder="请选择"
+                                onChange={(value: any, option: any) => this.setState({ businessDatasId: value })}
+                                value={this.state.businessDatasId}
                                 style={{
                                     width: '100%',
                                 }}
                             >
-                                <Option value="0">新会</Option>
+                                {
+                                    this.state.businessDatas.map((item: any, index: any) => {
+                                        return (<Option key={item.id} value={item.id}>{item.name}</Option>)
+                                    })
+                                }
                             </Select>
                         </Form.Item>
                         <Form.Item label="门头图片">
@@ -736,19 +872,18 @@ export default class AddShop extends Component {
                     </Form>
                 </Card>
 
-
+                <Button onClick={() => console.log(this.state)}>提交</Button>
 
                 <Modal
                     className={styles.mapModal}
                     title="Basic Modal"
-                    // visible={this.state.mapShow}
-                    visible={true}
-                    onOk={() => { }}
+                    visible={this.state.mapShow}
+                    onOk={() => { this.setState({ mapShow: false }) }}
                     onCancel={() => { this.setState({ mapShow: false }) }}
                 >
                     <div className={styles.mapContent}>
-                        <Cascader className={styles.mapContentInputL} options={this.state.city_list} onChange={(query: any) => { this.setState({ city_id: query }) }} />
-                        <Input className={styles.mapContentInputR} type="text" value={this.state.map_address} onChange={(e: any) => { this.setState({ map_address: e.target.value }) }} />
+                        <Cascader className={styles.mapContentInputL} options={this.state.city_list} onChange={this.handleChangeSelcetMap} />
+                        <Input className={styles.mapContentInputR} type="text" value={this.state.storeAddress} onChange={(e: any) => { this.setState({ storeAddress: e.target.value }) }} />
                         <div className={styles.mapArea}>
                             <Map version={'1.4.15'} center={this.state.location} events={this.events} amapkey={'47d12b3485d7ded218b0d369e2ddd1ea'} zoom={12}  >
                                 <Marker position={this.state.location} />
@@ -757,7 +892,7 @@ export default class AddShop extends Component {
                     </div>
                 </Modal>
 
-            </div>
+            </div >
         )
     }
 }
